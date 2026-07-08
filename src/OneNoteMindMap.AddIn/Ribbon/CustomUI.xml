@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="OnRibbonLoad">
+  <ribbon>
+    <tabs>
+      <tab id="tabMindMap" getLabel="GetLabel" insertAfterMso="TabHome">
+        <group id="groupCreate" getLabel="GetLabel">
+          <button id="btnNewMap" onAction="OnNewMap" size="large" getImage="GetImage" getLabel="GetLabel" getScreentip="GetScreentip" getSupertip="GetSupertip"/>
+          <button id="btnGenerateFromPage" onAction="OnGenerateFromPage" size="large" getImage="GetImage" getLabel="GetLabel" getScreentip="GetScreentip" getSupertip="GetSupertip"/>
+        </group>
+        <group id="groupEdit" getLabel="GetLabel">
+          <button id="btnEditCurrentMap" onAction="OnEditCurrentMap" size="large" getImage="GetImage" getLabel="GetLabel" getScreentip="GetScreentip" getSupertip="GetSupertip"/>
+          <button id="btnInsertPreview" onAction="OnInsertPreview" size="large" getImage="GetImage" getLabel="GetLabel" getScreentip="GetScreentip" getSupertip="GetSupertip"/>
+        </group>
+        <group id="groupExport" getLabel="GetLabel">
+          <button id="btnExportPng" onAction="OnExportPng" size="large" getImage="GetImage" getLabel="GetLabel" getScreentip="GetScreentip" getSupertip="GetSupertip"/>
+          <button id="btnExportSvg" onAction="OnExportSvg" size="large" getImage="GetImage" getLabel="GetLabel" getScreentip="GetScreentip" getSupertip="GetSupertip"/>
+        </group>
+        <group id="groupAdvanced" getLabel="GetLabel">
+          <button id="btnMindMapToOutline" onAction="OnMindMapToOutline" size="large" getImage="GetImage" getLabel="GetLabel" getScreentip="GetScreentip" getSupertip="GetSupertip"/>
+          <button id="btnHelp" onAction="OnHelp" size="large" getImage="GetImage" getLabel="GetLabel" getScreentip="GetScreentip" getSupertip="GetSupertip"/>
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>

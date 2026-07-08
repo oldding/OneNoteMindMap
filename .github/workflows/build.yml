@@ -1,0 +1,52 @@
+name: Build
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Setup Inno Setup
+      shell: powershell
+      run: |
+        choco install innosetup -y
+
+    - name: Build
+      shell: powershell
+      run: |
+        .\build.ps1 -Configuration Release
+
+    - name: Upload x64 Installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: installer-x64
+        path: src\OneNoteMindMap.Installer\Output\OneNoteMindMapSetup-x64.exe
+
+    - name: Upload x86 Installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: installer-x86
+        path: src\OneNoteMindMap.Installer\Output\OneNoteMindMapSetup-x86.exe
+
+    - name: Upload to Release
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: src\OneNoteMindMap.Installer\Output\OneNoteMindMapSetup-x64.exe
+        asset_name: OneNoteMindMapSetup-x64.exe
+        asset_content_type: application/octet-stream

@@ -1,0 +1,36 @@
+<UserControl x:Class="OneNoteMindMap.Editor.NodeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="160" Height="44">
+    <Border x:Name="NodeBorder"
+            Background="White"
+            BorderBrush="#CCCCCC"
+            BorderThickness="1"
+            CornerRadius="6"
+            Padding="8,4"
+            Cursor="Hand"
+            MouseLeftButtonDown="Border_MouseLeftButtonDown">
+        <Grid>
+            <TextBlock x:Name="TextBlock"
+                       Text="节点"
+                       TextWrapping="NoWrap"
+                       TextTrimming="CharacterEllipsis"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontSize="13"
+                       Foreground="#333333"/>
+            <TextBox x:Name="EditBox"
+                     InputMethod.IsInputMethodEnabled="False"
+                     Visibility="Collapsed"
+                     Text=""
+                     AcceptsReturn="False"
+                     BorderThickness="1"
+                     BorderBrush="#0078D4"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Stretch"
+                     FontSize="13"
+                     LostFocus="EditBox_LostFocus"
+                     KeyDown="EditBox_KeyDown"/>
+        </Grid>
+    </Border>
+</UserControl>

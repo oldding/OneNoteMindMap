@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>OneNoteMindMap</RootNamespace>
+    <AssemblyName>OneNoteMindMap.AddIn</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <LangVersion>9.0</LangVersion>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Extensibility">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\..\packages\Office\Extensibility.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="office">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\..\packages\Office\office.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.OneNote">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\..\packages\Office\Microsoft.Office.Interop.OneNote.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="stdole">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>..\..\packages\Office\stdole.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OneNoteMindMap.Core\OneNoteMindMap.Core.csproj">
+      <Project>{B2C3D4E5-F6A7-8901-BCDE-F12345678901}</Project>
+      <Name>OneNoteMindMap.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OneNoteMindMap.Editor\OneNoteMindMap.Editor.csproj">
+      <Project>{C3D4E5F6-A7B8-9012-CDEF-123456789012}</Project>
+      <Name>OneNoteMindMap.Editor</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AddIn\Connect.cs" />
+    <Compile Include="AddIn\RibbonHandler.cs" />
+    <Compile Include="Features\NewMindMapCommand.cs" />
+    <Compile Include="Features\GenerateFromPageCommand.cs" />
+    <Compile Include="Features\EditCurrentMindMapCommand.cs" />
+    <Compile Include="Features\InsertPreviewCommand.cs" />
+    <Compile Include="Features\ExportPngCommand.cs" />
+    <Compile Include="Features\ExportSvgCommand.cs" />
+    <Compile Include="Features\MindMapToOutlineCommand.cs" />
+    <Compile Include="Features\EditorLauncher.cs" />
+    <Compile Include="OneNote\OneNoteProvider.cs" />
+    <Compile Include="OneNote\Interop\IOneNoteApplication.cs" />
+    <Compile Include="OneNote\PageParser.cs" />
+    <Compile Include="OneNote\PageWriter.cs" />
+    <Compile Include="OneNote\MindMapPageStore.cs" />
+    <Compile Include="UI\UiThread.cs" />
+    <Compile Include="UI\DialogHost.cs" />
+    <Compile Include="UI\Msg.cs" />
+    <Compile Include="UI\Strings.cs" />
+    <Compile Include="UI\ForceForeground.cs" />
+    <Compile Include="UI\WindowWrapper.cs" />
+    <Compile Include="Logging\Logger.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Ribbon\CustomUI.xml" />
+    <EmbeddedResource Include="Ribbon\Icons\New.png" />
+    <EmbeddedResource Include="Ribbon\Icons\Generate.png" />
+    <EmbeddedResource Include="Ribbon\Icons\Edit.png" />
+    <EmbeddedResource Include="Ribbon\Icons\Insert.png" />
+    <EmbeddedResource Include="Ribbon\Icons\Export.png" />
+    <EmbeddedResource Include="Ribbon\Icons\Svg.png" />
+    <EmbeddedResource Include="Ribbon\Icons\Outline.png" />
+    <EmbeddedResource Include="Ribbon\Icons\Help.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
