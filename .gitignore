@@ -326,8 +326,8 @@ report.xml
 # Github Actions build artifacts
 artifacts/
 
-# Inno Setup output
-Output/
+# Inno Setup output (tracked via -f for releases)
+# Output/
 
 # Rider
 .idea/
