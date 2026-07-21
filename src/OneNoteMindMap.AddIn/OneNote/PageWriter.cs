@@ -88,11 +88,9 @@ namespace OneNoteMindMap.OneNote
 
         private static string CreateTextWithLinq(string text)
         {
-            // Escape special characters for OneNote XML text content
+            // XCData handles XML special characters (&, <, >) automatically.
+            // Only convert newlines to <br/> which OneNote interprets inside CDATA.
             return text
-                .Replace("&", "&amp;")
-                .Replace("<", "&lt;")
-                .Replace(">", "&gt;")
                 .Replace("\r\n", "<br/>")
                 .Replace("\n", "<br/>")
                 .Replace("\r", "<br/>");

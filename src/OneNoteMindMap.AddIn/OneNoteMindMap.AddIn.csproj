@@ -89,6 +89,8 @@
     <Compile Include="Features\ExportPngCommand.cs" />
     <Compile Include="Features\ExportSvgCommand.cs" />
     <Compile Include="Features\MindMapToOutlineCommand.cs" />
+    <Compile Include="Features\HelpCommand.cs" />
+    <Compile Include="Features\SvgToPngConverter.cs" />
     <Compile Include="Features\EditorLauncher.cs" />
     <Compile Include="OneNote\OneNoteProvider.cs" />
     <Compile Include="OneNote\Interop\IOneNoteApplication.cs" />
@@ -101,6 +103,8 @@
     <Compile Include="UI\Strings.cs" />
     <Compile Include="UI\ForceForeground.cs" />
     <Compile Include="UI\WindowWrapper.cs" />
+    <Compile Include="UI\HelpForm.cs" />
+    <Compile Include="UI\HelpContent.cs" />
     <Compile Include="Logging\Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

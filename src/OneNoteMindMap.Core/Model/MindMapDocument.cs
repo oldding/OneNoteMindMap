@@ -12,7 +12,7 @@ namespace OneNoteMindMap.Core.Model
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public MindMapSourceInfo Source { get; set; } = new MindMapSourceInfo();
         public MindMapSettings Settings { get; set; } = new MindMapSettings();
-        public MindMapNode Root { get; set; } = new MindMapNode { Text = "中心主题" };
+        public MindMapNode Root { get; set; } = new MindMapNode { Text = "Central Topic" };
 
         public MindMapDocument Clone()
         {

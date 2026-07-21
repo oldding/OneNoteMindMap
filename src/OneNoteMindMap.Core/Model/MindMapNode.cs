@@ -54,5 +54,29 @@ namespace OneNoteMindMap.Core.Model
                 count += child.CountAllNodes();
             return count;
         }
+
+        /// <summary>Finds a node by id in the subtree rooted at this node.</summary>
+        public MindMapNode FindById(string id)
+        {
+            if (Id == id) return this;
+            foreach (var child in Children)
+            {
+                var found = child.FindById(id);
+                if (found != null) return found;
+            }
+            return null;
+        }
+
+        /// <summary>Finds the parent of the node with the given id.</summary>
+        public MindMapNode FindParentOf(string childId)
+        {
+            foreach (var child in Children)
+            {
+                if (child.Id == childId) return this;
+                var found = child.FindParentOf(childId);
+                if (found != null) return found;
+            }
+            return null;
+        }
     }
 }

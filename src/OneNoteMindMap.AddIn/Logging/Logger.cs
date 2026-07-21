@@ -5,6 +5,7 @@ namespace OneNoteMindMap.Logging
     public static class Logger
     {
         private static string _logPath;
+        private static readonly object _lock = new object();
 
         public static void Initialize()
         {
@@ -37,7 +38,10 @@ namespace OneNoteMindMap.Logging
             try
             {
                 string line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] {message}";
-                System.IO.File.AppendAllText(_logPath, line + Environment.NewLine);
+                lock (_lock)
+                {
+                    System.IO.File.AppendAllText(_logPath, line + Environment.NewLine);
+                }
             }
             catch { }
         }

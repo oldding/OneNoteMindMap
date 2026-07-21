@@ -9,13 +9,11 @@ namespace OneNoteMindMap.UI
     {
         private static Dispatcher _dispatcher;
         private static Thread _thread;
-        private static volatile bool _running;
 
         public static void EnsureStarted()
         {
             if (_dispatcher != null) return;
 
-            _running = true;
             using (var readyEvent = new ManualResetEvent(false))
             {
                 _thread = new Thread(() =>
@@ -27,9 +25,9 @@ namespace OneNoteMindMap.UI
                 })
                 {
                     Name = "OneNote MindMap UI Thread",
-                    IsBackground = true,
-                    ApartmentState = ApartmentState.STA
+                    IsBackground = true
                 };
+                _thread.SetApartmentState(ApartmentState.STA);
                 _thread.Start();
                 readyEvent.WaitOne(5000);
             }
@@ -62,7 +60,6 @@ namespace OneNoteMindMap.UI
 
         public static void Shutdown()
         {
-            _running = false;
             if (_dispatcher != null && !_dispatcher.HasShutdownFinished)
             {
                 _dispatcher.BeginInvokeShutdown(DispatcherPriority.Background);

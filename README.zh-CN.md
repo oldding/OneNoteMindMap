@@ -34,6 +34,16 @@
 | **导出 SVG** | 将脑图导出为 SVG 文件 |
 | **帮助** | 查看使用说明 |
 
+## 截图
+
+| 功能区 | 编辑器 |
+|--------|--------|
+| ![功能区](docs/001.png) | ![编辑器](docs/002.png) |
+
+| 布局 | 主题 |
+|------|------|
+| ![布局](docs/003.png) | ![主题](docs/004.png) |
+
 ## 系统要求
 
 - Windows 7 或更高版本
@@ -92,10 +102,10 @@ src/
 - **运行时**: COM Add-in (IDTExtensibility2 + IRibbonExtensibility)
 - **OneNote 交互**: Microsoft.Office.Interop.OneNote (v15.0)
 - **WPF**: PresentationFramework, RenderTargetBitmap
-- **JSON**: Newtonsoft.Json 13.0.3
+- **JSON**: 内置轻量 JSON 序列化器（无外部依赖）
 - **安装**: Inno Setup 6（x86/x64）
 - **构建**: Visual Studio 2022+ / MSBuild
 
 ## 许可证
 
-版权所有 © 2026。保留所有权利。私有项目——未开源。
+[MIT](LICENSE) © 2026 OneNoteMindMap Contributors

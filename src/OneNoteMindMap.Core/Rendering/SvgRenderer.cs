@@ -35,7 +35,7 @@ namespace OneNoteMindMap.Core.Rendering
 
             foreach (var layout in layouts)
             {
-                var node = FindNode(doc.Root, layout.NodeId);
+                var node = doc.Root.FindById(layout.NodeId);
                 if (node == null) continue;
 
                 double x = layout.X + offsetX;
@@ -54,8 +54,8 @@ namespace OneNoteMindMap.Core.Rendering
 
             foreach (var layout in layouts.Where(l => l.Depth > 0))
             {
-                var parentId = FindParentId(doc.Root, layout.NodeId);
-                if (parentId == null || !layoutDict.TryGetValue(parentId, out var parentLayout)) continue;
+                var parentNode = doc.Root.FindParentOf(layout.NodeId);
+                if (parentNode == null || !layoutDict.TryGetValue(parentNode.Id, out var parentLayout)) continue;
 
                 double x1 = parentLayout.AnchorRightX + offsetX;
                 double y1 = parentLayout.AnchorRightY + offsetY;
@@ -71,28 +71,6 @@ namespace OneNoteMindMap.Core.Rendering
 
             sb.AppendLine("</svg>");
             return sb.ToString();
-        }
-
-        private static MindMapNode FindNode(MindMapNode root, string id)
-        {
-            if (root.Id == id) return root;
-            foreach (var child in root.Children)
-            {
-                var found = FindNode(child, id);
-                if (found != null) return found;
-            }
-            return null;
-        }
-
-        private static string FindParentId(MindMapNode root, string childId)
-        {
-            foreach (var child in root.Children)
-            {
-                if (child.Id == childId) return root.Id;
-                var found = FindParentId(child, childId);
-                if (found != null) return found;
-            }
-            return null;
         }
 
         private static string GetNodeColor(MindMapNode node, int depth, Theme theme)
@@ -114,82 +92,6 @@ namespace OneNoteMindMap.Core.Rendering
         private static string EscapeXml(string s)
         {
             return s.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;").Replace("'", "&apos;");
-        }
-    }
-
-    public class Theme
-    {
-        public string Name { get; set; } = "Default";
-        public string Background { get; set; } = "#FFFFFF";
-        public string RootFill { get; set; } = "#7719AA";
-        public string RootText { get; set; } = "#FFFFFF";
-        public string Level1Fill { get; set; } = "#FFFFFF";
-        public string Level2Fill { get; set; } = "#FFFFFF";
-        public string NodeFill { get; set; } = "#FFFFFF";
-        public string NodeText { get; set; } = "#333333";
-        public string Border { get; set; } = "#CCCCCC";
-        public string Line { get; set; } = "#AAAAAA";
-        public string FontFamily { get; set; } = "Microsoft YaHei, Arial, sans-serif";
-    }
-
-    public static class ThemeManager
-    {
-        private static readonly Theme DefaultTheme = new Theme();
-        private static readonly Theme PurpleTheme = new Theme
-        {
-            Name = "Purple",
-            RootFill = "#7719AA",
-            RootText = "#FFFFFF",
-            Level1Fill = "#E8D5F5",
-            Level2Fill = "#F3E8FB",
-            NodeFill = "#FFFFFF",
-            Line = "#7719AA"
-        };
-        private static readonly Theme MinimalTheme = new Theme
-        {
-            Name = "Minimal",
-            Background = "#FFFFFF",
-            RootFill = "#333333",
-            RootText = "#FFFFFF",
-            Level1Fill = "#F5F5F5",
-            Level2Fill = "#FAFAFA",
-            NodeFill = "#FFFFFF",
-            Border = "#CCCCCC",
-            Line = "#999999"
-        };
-        private static readonly Theme FreshTheme = new Theme
-        {
-            Name = "Fresh",
-            RootFill = "#0F766E",
-            RootText = "#FFFFFF",
-            Level1Fill = "#CCFBF1",
-            Level2Fill = "#ECFDF5",
-            NodeFill = "#FFFFFF",
-            Border = "#99F6E4",
-            Line = "#14B8A6"
-        };
-        private static readonly Theme WarmTheme = new Theme
-        {
-            Name = "Warm",
-            RootFill = "#C2410C",
-            RootText = "#FFFFFF",
-            Level1Fill = "#FFEDD5",
-            Level2Fill = "#FFF7ED",
-            NodeFill = "#FFFFFF",
-            Border = "#FED7AA",
-            Line = "#FB923C"
-        };
-
-        public static Theme GetTheme(string name)
-        {
-            return name switch
-            {
-                "Purple" => PurpleTheme,
-                "Minimal" => MinimalTheme,
-                "Fresh" => FreshTheme,
-                "Warm" => WarmTheme,
-                _ => DefaultTheme
-            };
         }
     }
 }

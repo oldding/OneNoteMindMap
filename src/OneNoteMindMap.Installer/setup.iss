@@ -13,7 +13,7 @@
 #endif
 
 #define MyAppName "OneNote 脑图"
-#define MyAppVersion "0.0.1"
+#define MyAppVersion "1.3.0"
 #define MyAppPublisher "OneNoteMindMap"
 #define MyProgId "OneNoteMindMap.Connect"
 #define MyGuid "{{A4CEC0EF-4C6C-4CBD-9112-B83545EEADE8}"
@@ -27,7 +27,7 @@ DefaultDirName={#InstallerDefaultDir}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=Output
-OutputBaseFilename=OneNoteMindMapSetup-{#InstallerSuffix}
+OutputBaseFilename=OneNoteMindMapSetup-{#MyAppVersion}-{#InstallerSuffix}
 ArchitecturesAllowed={#InstallerArchitectures}
 #if InstallerArch == "x64"
 ArchitecturesInstallIn64BitMode=x64compatible
@@ -49,7 +49,6 @@ Source: "..\OneNoteMindMap.AddIn\bin\Release\Extensibility.dll"; DestDir: "{app}
 Source: "..\OneNoteMindMap.AddIn\bin\Release\office.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\OneNoteMindMap.AddIn\bin\Release\Microsoft.Office.Interop.OneNote.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\OneNoteMindMap.AddIn\bin\Release\stdole.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
-Source: "..\OneNoteMindMap.AddIn\bin\Release\*.pdb"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
 [Icons]
 Name: "{group}\OneNote 脑图编辑工具"; Filename: "{app}\OneNoteMindMap.Editor.dll"
@@ -74,13 +73,13 @@ Root: HKCR; Subkey: "CLSID\{#MyGuid}\Implemented Categories\{{62C8FE65-4EBB-45E7
 Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueData: "mscoree.dll"; Flags: uninsdeletekey
 Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "ThreadingModel"; ValueData: "Both"
 Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "Class"; ValueData: "OneNoteMindMap.AddIn.Connect"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "Assembly"; ValueData: "OneNoteMindMap.AddIn, Version=0.0.1.0, Culture=neutral, PublicKeyToken=null"
+Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "Assembly"; ValueData: "OneNoteMindMap.AddIn, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null"
 Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "RuntimeVersion"; ValueData: "v4.0.30319"
 Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "CodeBase"; ValueData: "{app}\OneNoteMindMap.AddIn.dll"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32\0.0.1.0"; ValueType: string; ValueName: "Class"; ValueData: "OneNoteMindMap.AddIn.Connect"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32\0.0.1.0"; ValueType: string; ValueName: "Assembly"; ValueData: "OneNoteMindMap.AddIn, Version=0.0.1.0, Culture=neutral, PublicKeyToken=null"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32\0.0.1.0"; ValueType: string; ValueName: "RuntimeVersion"; ValueData: "v4.0.30319"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32\0.0.1.0"; ValueType: string; ValueName: "CodeBase"; ValueData: "{app}\OneNoteMindMap.AddIn.dll"
+Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.3.0.0"; ValueType: string; ValueName: "Class"; ValueData: "OneNoteMindMap.AddIn.Connect"
+Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.3.0.0"; ValueType: string; ValueName: "Assembly"; ValueData: "OneNoteMindMap.AddIn, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null"
+Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.3.0.0"; ValueType: string; ValueName: "RuntimeVersion"; ValueData: "v4.0.30319"
+Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.3.0.0"; ValueType: string; ValueName: "CodeBase"; ValueData: "{app}\OneNoteMindMap.AddIn.dll"
 Root: HKCR; Subkey: "CLSID\{#MyGuid}\ProgId"; ValueType: string; ValueData: "{#MyProgId}"
 Root: HKCR; Subkey: "CLSID\{#MyGuid}\Programmable"; ValueType: string; ValueData: ""
 Root: HKCR; Subkey: "CLSID\{#MyGuid}\VersionIndependentProgID"; ValueType: string; ValueData: "{#MyProgId}"

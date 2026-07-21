@@ -101,9 +101,6 @@ namespace OneNoteMindMap.AddIn
                 _oneNoteApp = null;
                 if (ReferenceEquals(_instance, this))
                     _instance = null;
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
             }
         }
 
@@ -201,24 +198,5 @@ namespace OneNoteMindMap.AddIn
         public void OnExportSvg(IRibbonControl c) => UiThread.Post(ExportSvgCommand.Execute);
         public void OnMindMapToOutline(IRibbonControl c) => UiThread.Post(MindMapToOutlineCommand.Execute);
         public void OnHelp(IRibbonControl c) => UiThread.Post(HelpCommand.Execute);
-    }
-
-    public static class HelpCommand
-    {
-        public static void Execute()
-        {
-            Msg.Info(
-                "OneNote 脑图 v0.0.1\n\n" +
-                "把 OneNote 页面一键生成思维导图，\n" +
-                "也可编辑、保存、回写大纲。\n\n" +
-                "快捷键：\n" +
-                "  Enter  添加同级节点\n" +
-                "  Tab    添加子节点\n" +
-                "  Delete 删除节点\n" +
-                "  F2     编辑节点\n" +
-                "  Space  折叠/展开\n" +
-                "  Ctrl+S 保存",
-                "OneNote 脑图");
-        }
     }
 }

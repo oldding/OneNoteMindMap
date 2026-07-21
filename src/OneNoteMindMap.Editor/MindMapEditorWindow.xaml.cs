@@ -21,6 +21,7 @@ namespace OneNoteMindMap.Editor
         private NodeControl _selectedNode;
         private double _zoomLevel = 1.0;
         private MindMapLayoutEngine _engine;
+        private bool _isDirty;
 
         public MindMapDocument Document => _document;
         public bool IsSaved { get; private set; }
@@ -32,10 +33,109 @@ namespace OneNoteMindMap.Editor
             _engine = new MindMapLayoutEngine();
             InitializeComponent();
             InputMethod.SetIsInputMethodEnabled(this, false);
+            ApplyLocalization();
             ApplySettings();
             RenderMindMap();
-            this.Title = "脑图编辑器 - " + (doc.Title ?? "未命名");
+            this.Title = EditorStrings.EditorTitle + " - " + (doc.Title ?? EditorStrings.If("未命名", "Untitled"));
             Loaded += MindMapEditorWindow_Loaded;
+            Closing += MindMapEditorWindow_Closing;
+            KeyDown += MindMapEditorWindow_KeyDown;
+        }
+
+        private void ApplyLocalization()
+        {
+            BtnAddSibling.Content = EditorStrings.AddSibling;
+            BtnAddSibling.ToolTip = EditorStrings.TipAddSibling;
+            BtnAddChild.Content = EditorStrings.AddChild;
+            BtnAddChild.ToolTip = EditorStrings.TipAddChild;
+            BtnDelete.Content = EditorStrings.Delete;
+            BtnDelete.ToolTip = EditorStrings.TipDelete;
+            BtnCollapse.Content = EditorStrings.CollapseExpand;
+            BtnCollapse.ToolTip = EditorStrings.TipCollapse;
+            BtnSave.Content = EditorStrings.Save;
+            BtnSave.ToolTip = EditorStrings.TipSave;
+            BtnExportPng.Content = EditorStrings.ExportPng;
+            BtnExportPng.ToolTip = EditorStrings.TipExportPng;
+            BtnExportSvg.Content = EditorStrings.ExportSvg;
+            BtnExportSvg.ToolTip = EditorStrings.TipExportSvg;
+            LblLayout.Content = EditorStrings.LayoutLabel;
+            LblTheme.Content = EditorStrings.ThemeLabel;
+            LblShape.Content = EditorStrings.ShapeLabel;
+
+            ((ComboBoxItem)LayoutCombo.Items[0]).Content = EditorStrings.LayoutRightTree;
+            ((ComboBoxItem)LayoutCombo.Items[1]).Content = EditorStrings.LayoutBothSides;
+            ((ComboBoxItem)LayoutCombo.Items[2]).Content = EditorStrings.LayoutOrgChart;
+            ((ComboBoxItem)ThemeCombo.Items[0]).Content = EditorStrings.ThemeDefault;
+            ((ComboBoxItem)ThemeCombo.Items[1]).Content = EditorStrings.ThemePurple;
+            ((ComboBoxItem)ThemeCombo.Items[2]).Content = EditorStrings.ThemeMinimal;
+            ((ComboBoxItem)ThemeCombo.Items[3]).Content = EditorStrings.ThemeFresh;
+            ((ComboBoxItem)ThemeCombo.Items[4]).Content = EditorStrings.ThemeWarm;
+            ((ComboBoxItem)ShapeCombo.Items[0]).Content = EditorStrings.ShapeRounded;
+            ((ComboBoxItem)ShapeCombo.Items[1]).Content = EditorStrings.ShapeRectangle;
+            ((ComboBoxItem)ShapeCombo.Items[2]).Content = EditorStrings.ShapePill;
+
+            StatusText.Text = EditorStrings.Ready;
+        }
+
+        private void MindMapEditorWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Skip shortcuts when editing a node text box
+            if (e.OriginalSource is TextBox) return;
+
+            if (e.Key == Key.Enter)
+            {
+                AddSibling_Click(sender, e);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Tab)
+            {
+                AddChild_Click(sender, e);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Delete)
+            {
+                DeleteNode_Click(sender, e);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.F2)
+            {
+                if (_selectedNode != null)
+                {
+                    _selectedNode.EnterEditMode();
+                    e.Handled = true;
+                }
+            }
+            else if (e.Key == Key.Space)
+            {
+                CollapseToggle_Click(sender, e);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.S && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                Save_Click(sender, e);
+                e.Handled = true;
+            }
+        }
+
+        private void MindMapEditorWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (_isDirty && !IsSaved)
+            {
+                var result = MessageBox.Show(
+                    EditorStrings.UnsavedChanges,
+                    EditorStrings.UnsavedTitle,
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    SaveMindMap();
+                }
+                else if (result == MessageBoxResult.Cancel)
+                {
+                    e.Cancel = true;
+                }
+            }
         }
 
         private void MindMapEditorWindow_Loaded(object sender, RoutedEventArgs e)
@@ -100,10 +200,10 @@ namespace OneNoteMindMap.Editor
             // Draw connection lines first so they never cover node hit testing.
             foreach (var layout in layouts.Where(l => l.Depth > 0))
             {
-                var parentId = FindParentId(_document.Root, layout.NodeId);
-                if (parentId == null) continue;
+                var parentNode = _document.Root.FindParentOf(layout.NodeId);
+                if (parentNode == null) continue;
 
-                var parentLayout = layouts.FirstOrDefault(l => l.NodeId == parentId);
+                var parentLayout = layouts.FirstOrDefault(l => l.NodeId == parentNode.Id);
                 if (parentLayout == null) continue;
 
                 var line = new System.Windows.Shapes.Path
@@ -119,7 +219,7 @@ namespace OneNoteMindMap.Editor
 
             foreach (var layout in layouts)
             {
-                var node = FindNode(_document.Root, layout.NodeId);
+                var node = _document.Root.FindById(layout.NodeId);
                 if (node == null) continue;
 
                 var ctrl = new NodeControl(node, layout, _engine.Options);
@@ -145,36 +245,15 @@ namespace OneNoteMindMap.Editor
             MainCanvas.Height = Math.Max(maxY, 600);
         }
 
-        private MindMapNode FindNode(MindMapNode root, string id)
-        {
-            if (root.Id == id) return root;
-            foreach (var child in root.Children)
-            {
-                var found = FindNode(child, id);
-                if (found != null) return found;
-            }
-            return null;
-        }
-
-        private string FindParentId(MindMapNode root, string childId)
-        {
-            foreach (var child in root.Children)
-            {
-                if (child.Id == childId) return root.Id;
-                var found = FindParentId(child, childId);
-                if (found != null) return found;
-            }
-            return null;
-        }
-
         private void UpdateStatusBar()
         {
             if (_document?.Root == null || StatusText == null || ZoomText == null)
                 return;
 
             int nodeCount = CountNodes(_document.Root);
-            StatusText.Text = $"节点数: {nodeCount}  |  缩放: {(_zoomLevel * 100):F0}%";
-            ZoomText.Text = $"{(_zoomLevel * 100):F0}%";
+            int zoomPercent = (int)(_zoomLevel * 100);
+            StatusText.Text = EditorStrings.StatusFormat(nodeCount, zoomPercent);
+            ZoomText.Text = $"{zoomPercent}%";
         }
 
         private int CountNodes(MindMapNode node)
@@ -201,13 +280,7 @@ namespace OneNoteMindMap.Editor
 
         private MindMapNode GetParentNode(MindMapNode root, string childId)
         {
-            foreach (var child in root.Children)
-            {
-                if (child.Id == childId) return root;
-                var found = GetParentNode(child, childId);
-                if (found != null) return found;
-            }
-            return null;
+            return root.FindParentOf(childId);
         }
 
         private void NodeCtrl_MouseDown(object sender, MouseButtonEventArgs e)
@@ -282,8 +355,8 @@ namespace OneNoteMindMap.Editor
             var node = GetSelectedNodeData();
             if (node == null || _document.Root == node)
             {
-                _document.Root.Children.Add(new MindMapNode { Text = "新节点" });
-                IsSaved = true;
+                _document.Root.Children.Add(new MindMapNode { Text = EditorStrings.NewNodeText });
+                _isDirty = true;
                 RenderMindMap();
                 return;
             }
@@ -291,10 +364,10 @@ namespace OneNoteMindMap.Editor
             var parent = GetParentNode(_document.Root, node.Id);
             if (parent == null) return;
 
-            var newNode = new MindMapNode { Text = "新节点" };
+            var newNode = new MindMapNode { Text = EditorStrings.NewNodeText };
             int idx = parent.Children.IndexOf(node);
             parent.Children.Insert(idx + 1, newNode);
-            IsSaved = true;
+            _isDirty = true;
             RenderMindMap();
         }
 
@@ -303,9 +376,9 @@ namespace OneNoteMindMap.Editor
             var node = GetSelectedNodeData();
             if (node == null) node = _document.Root;
 
-            var newNode = new MindMapNode { Text = "新节点" };
+            var newNode = new MindMapNode { Text = EditorStrings.NewNodeText };
             node.Children.Add(newNode);
-            IsSaved = true;
+            _isDirty = true;
             RenderMindMap();
         }
 
@@ -319,7 +392,7 @@ namespace OneNoteMindMap.Editor
 
             parent.Children.Remove(node);
             _selectedNode = null;
-            IsSaved = true;
+            _isDirty = true;
             RenderMindMap();
         }
 
@@ -328,7 +401,7 @@ namespace OneNoteMindMap.Editor
             var node = GetSelectedNodeData();
             if (node == null) return;
             node.Collapsed = !node.Collapsed;
-            IsSaved = true;
+            _isDirty = true;
             RenderMindMap();
         }
 
@@ -349,12 +422,12 @@ namespace OneNoteMindMap.Editor
                 };
 
                 IsSaved = true;
-                StatusText.Text = "已保存到 OneNote 页面";
+                StatusText.Text = EditorStrings.SavedToOneNote;
                 Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("保存失败: " + ex.Message, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(EditorStrings.SaveFailed + ": " + ex.Message, EditorStrings.UnsavedTitle, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -362,7 +435,7 @@ namespace OneNoteMindMap.Editor
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Filter = "PNG 图片|*.png",
+                Filter = EditorStrings.PngFilter,
                 FileName = (_document.Title ?? "mindmap") + ".png"
             };
 
@@ -374,12 +447,12 @@ namespace OneNoteMindMap.Editor
                     if (pngBytes != null)
                     {
                         File.WriteAllBytes(dialog.FileName, pngBytes);
-                        StatusText.Text = "PNG 已导出";
+                        StatusText.Text = EditorStrings.PngExported;
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("导出失败: " + ex.Message);
+                    MessageBox.Show(EditorStrings.ExportFailed + ": " + ex.Message);
                 }
             }
         }
@@ -388,7 +461,7 @@ namespace OneNoteMindMap.Editor
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Filter = "SVG 文件|*.svg",
+                Filter = EditorStrings.SvgFilter,
                 FileName = (_document.Title ?? "mindmap") + ".svg"
             };
 
@@ -399,11 +472,11 @@ namespace OneNoteMindMap.Editor
                     var layouts = _engine.CalculateLayout(_document.Root);
                     string svg = SvgRenderer.Render(_document, layouts);
                     File.WriteAllText(dialog.FileName, svg);
-                    StatusText.Text = "SVG 已导出";
+                    StatusText.Text = EditorStrings.SvgExported;
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("导出失败: " + ex.Message);
+                    MessageBox.Show(EditorStrings.ExportFailed + ": " + ex.Message);
                 }
             }
         }

@@ -34,6 +34,16 @@
 | **Export SVG** | Export the mind map as an SVG file |
 | **Help** | Show usage instructions |
 
+## Screenshots
+
+| Ribbon | Editor |
+|--------|--------|
+| ![Ribbon](docs/001.png) | ![Editor](docs/002.png) |
+
+| Layouts | Themes |
+|---------|--------|
+| ![Layouts](docs/003.png) | ![Themes](docs/004.png) |
+
 ## Requirements
 
 - Windows 7 or later
@@ -92,10 +102,10 @@ src/
 - **Runtime**: COM Add-in (IDTExtensibility2 + IRibbonExtensibility)
 - **OneNote Interop**: Microsoft.Office.Interop.OneNote (v15.0)
 - **WPF**: PresentationFramework, RenderTargetBitmap
-- **JSON**: Newtonsoft.Json 13.0.3
+- **JSON**: Built-in lightweight JSON serializer (no external dependencies)
 - **Installer**: Inno Setup 6 (x86/x64)
 - **Build**: Visual Studio 2022+ / MSBuild
 
 ## License
 
-Copyright (c) 2026. All rights reserved. Private project — not open source.
+[MIT](LICENSE) © 2026 OneNoteMindMap Contributors

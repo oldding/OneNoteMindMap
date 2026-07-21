@@ -38,10 +38,10 @@ namespace OneNoteMindMap.Editor
 
             foreach (var layout in layouts.Where(l => l.Depth > 0))
             {
-                var parentId = FindParentId(doc.Root, layout.NodeId);
-                if (parentId == null) continue;
+                var parentNode = doc.Root.FindParentOf(layout.NodeId);
+                if (parentNode == null) continue;
 
-                var parentLayout = layouts.FirstOrDefault(l => l.NodeId == parentId);
+                var parentLayout = layouts.FirstOrDefault(l => l.NodeId == parentNode.Id);
                 if (parentLayout == null) continue;
 
                 canvas.Children.Add(new System.Windows.Shapes.Path
@@ -56,7 +56,7 @@ namespace OneNoteMindMap.Editor
 
             foreach (var layout in layouts)
             {
-                var node = FindNode(doc.Root, layout.NodeId);
+                var node = doc.Root.FindById(layout.NodeId);
                 if (node == null) continue;
 
                 var ctrl = new NodeControl(node, layout, engine.Options);
@@ -83,26 +83,5 @@ namespace OneNoteMindMap.Editor
             }
         }
 
-        private static MindMapNode FindNode(MindMapNode root, string id)
-        {
-            if (root.Id == id) return root;
-            foreach (var child in root.Children)
-            {
-                var found = FindNode(child, id);
-                if (found != null) return found;
-            }
-            return null;
-        }
-
-        private static string FindParentId(MindMapNode root, string childId)
-        {
-            foreach (var child in root.Children)
-            {
-                if (child.Id == childId) return root.Id;
-                var found = FindParentId(child, childId);
-                if (found != null) return found;
-            }
-            return null;
-        }
     }
 }

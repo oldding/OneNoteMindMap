@@ -56,7 +56,7 @@
     <Compile Include="NodeControl.xaml.cs">
       <DependentUpon>NodeControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MindMapEditorViewModel.cs" />
+    <Compile Include="EditorStrings.cs" />
     <Compile Include="LinkGeometryBuilder.cs" />
     <Compile Include="PngExporter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
