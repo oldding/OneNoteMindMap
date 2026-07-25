@@ -6,14 +6,20 @@
   #define InstallerSuffix "x86"
   #define InstallerDefaultDir "{autopf32}\OneNoteMindMap"
   #define InstallerArchitectures "x86compatible"
+  #define ComRoot "HKCR32"
+  #define RegAsmPath "{dotnet40}\RegAsm.exe"
+  #define ComRegistrationMessage "正在注册 32 位 COM 组件..."
 #else
   #define InstallerSuffix "x64"
   #define InstallerDefaultDir "{autopf64}\OneNoteMindMap"
   #define InstallerArchitectures "x64compatible"
+  #define ComRoot "HKCR64"
+  #define RegAsmPath "{dotnet4064}\RegAsm.exe"
+  #define ComRegistrationMessage "正在注册 64 位 COM 组件..."
 #endif
 
 #define MyAppName "OneNote 脑图"
-#define MyAppVersion "1.3.0"
+#define MyAppVersion "1.3.1"
 #define MyAppPublisher "OneNoteMindMap"
 #define MyProgId "OneNoteMindMap.Connect"
 #define MyGuid "{{A4CEC0EF-4C6C-4CBD-9112-B83545EEADE8}"
@@ -55,44 +61,42 @@ Name: "{group}\OneNote 脑图编辑工具"; Filename: "{app}\OneNoteMindMap.Edit
 Name: "{group}\卸载 OneNote 脑图"; Filename: "{uninstallexe}"
 
 [Run]
-Filename: "{dotnet4064}\RegAsm.exe"; Parameters: "/codebase ""{app}\OneNoteMindMap.AddIn.dll"""; StatusMsg: "正在注册 64 位 COM 组件..."; Flags: runhidden waituntilterminated skipifdoesntexist; Check: IsWin64
-Filename: "{dotnet40}\RegAsm.exe"; Parameters: "/codebase ""{app}\OneNoteMindMap.AddIn.dll"""; StatusMsg: "正在注册 32 位 COM 组件..."; Flags: runhidden waituntilterminated skipifdoesntexist; Check: not IsWin64
+Filename: "{#RegAsmPath}"; Parameters: "/codebase ""{app}\OneNoteMindMap.AddIn.dll"""; StatusMsg: "{#ComRegistrationMessage}"; Flags: runhidden waituntilterminated skipifdoesntexist
 
 [UninstallRun]
-Filename: "{dotnet4064}\RegAsm.exe"; Parameters: "/u ""{app}\OneNoteMindMap.AddIn.dll"""; StatusMsg: "正在注销 64 位 COM 组件..."; Flags: runhidden waituntilterminated skipifdoesntexist; Check: IsWin64
-Filename: "{dotnet40}\RegAsm.exe"; Parameters: "/u ""{app}\OneNoteMindMap.AddIn.dll"""; StatusMsg: "正在注销 32 位 COM 组件..."; Flags: runhidden waituntilterminated skipifdoesntexist; Check: not IsWin64
+Filename: "{#RegAsmPath}"; Parameters: "/u ""{app}\OneNoteMindMap.AddIn.dll"""; StatusMsg: "正在注销 COM 组件..."; Flags: runhidden waituntilterminated skipifdoesntexist; RunOnceId: "UnregisterOneNoteMindMap"
 
 [Registry]
 Root: HKCU; Subkey: "Software\Microsoft\Office\OneNote\AddIns\{#MyProgId}"; ValueType: string; ValueName: "Description"; ValueData: "OneNote 思维导图工具"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Microsoft\Office\OneNote\AddIns\{#MyProgId}"; ValueType: string; ValueName: "FriendlyName"; ValueData: "{#MyAppName}"
 Root: HKCU; Subkey: "Software\Microsoft\Office\OneNote\AddIns\{#MyProgId}"; ValueType: dword; ValueName: "LoadBehavior"; ValueData: "3"
 
-Root: HKCR; Subkey: "CLSID\{#MyGuid}"; ValueType: string; ValueData: "OneNoteMindMap.AddIn.Connect"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "CLSID\{#MyGuid}"; ValueType: string; ValueName: "AppID"; ValueData: "{#MyGuid}"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\Implemented Categories\{{62C8FE65-4EBB-45E7-B440-6E39B2CDBF29}"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueData: "mscoree.dll"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "ThreadingModel"; ValueData: "Both"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "Class"; ValueData: "OneNoteMindMap.AddIn.Connect"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "Assembly"; ValueData: "OneNoteMindMap.AddIn, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "RuntimeVersion"; ValueData: "v4.0.30319"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "CodeBase"; ValueData: "{app}\OneNoteMindMap.AddIn.dll"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.3.0.0"; ValueType: string; ValueName: "Class"; ValueData: "OneNoteMindMap.AddIn.Connect"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.3.0.0"; ValueType: string; ValueName: "Assembly"; ValueData: "OneNoteMindMap.AddIn, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.3.0.0"; ValueType: string; ValueName: "RuntimeVersion"; ValueData: "v4.0.30319"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.3.0.0"; ValueType: string; ValueName: "CodeBase"; ValueData: "{app}\OneNoteMindMap.AddIn.dll"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\ProgId"; ValueType: string; ValueData: "{#MyProgId}"
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\Programmable"; ValueType: string; ValueData: ""
-Root: HKCR; Subkey: "CLSID\{#MyGuid}\VersionIndependentProgID"; ValueType: string; ValueData: "{#MyProgId}"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}"; ValueType: string; ValueData: "OneNoteMindMap.AddIn.Connect"; Flags: uninsdeletekey
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}"; ValueType: string; ValueName: "AppID"; ValueData: "{#MyGuid}"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\Implemented Categories\{{62C8FE65-4EBB-45E7-B440-6E39B2CDBF29}"; Flags: uninsdeletekey
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueData: "mscoree.dll"; Flags: uninsdeletekey
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "ThreadingModel"; ValueData: "Both"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "Class"; ValueData: "OneNoteMindMap.AddIn.Connect"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "Assembly"; ValueData: "OneNoteMindMap.AddIn, Version=1.3.1.0, Culture=neutral, PublicKeyToken=null"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "RuntimeVersion"; ValueData: "v4.0.30319"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "CodeBase"; ValueData: "{app}\OneNoteMindMap.AddIn.dll"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.3.1.0"; ValueType: string; ValueName: "Class"; ValueData: "OneNoteMindMap.AddIn.Connect"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.3.1.0"; ValueType: string; ValueName: "Assembly"; ValueData: "OneNoteMindMap.AddIn, Version=1.3.1.0, Culture=neutral, PublicKeyToken=null"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.3.1.0"; ValueType: string; ValueName: "RuntimeVersion"; ValueData: "v4.0.30319"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.3.1.0"; ValueType: string; ValueName: "CodeBase"; ValueData: "{app}\OneNoteMindMap.AddIn.dll"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\ProgId"; ValueType: string; ValueData: "{#MyProgId}"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\Programmable"; ValueType: string; ValueData: ""
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\VersionIndependentProgID"; ValueType: string; ValueData: "{#MyProgId}"
 
-Root: HKCR; Subkey: "AppID\{#MyGuid}"; ValueType: string; ValueData: "OneNoteMindMap.AddIn"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "AppID\{#MyGuid}"; ValueType: string; ValueName: "DllSurrogate"; ValueData: ""
-Root: HKCR; Subkey: "AppID\OneNoteMindMap.AddIn.dll"; ValueType: string; ValueName: "AppID"; ValueData: "{#MyGuid}"; Flags: uninsdeletekey
+Root: {#ComRoot}; Subkey: "AppID\{#MyGuid}"; ValueType: string; ValueData: "OneNoteMindMap.AddIn"; Flags: uninsdeletekey
+Root: {#ComRoot}; Subkey: "AppID\{#MyGuid}"; ValueType: string; ValueName: "DllSurrogate"; ValueData: ""
+Root: {#ComRoot}; Subkey: "AppID\OneNoteMindMap.AddIn.dll"; ValueType: string; ValueName: "AppID"; ValueData: "{#MyGuid}"; Flags: uninsdeletekey
 
-Root: HKCR; Subkey: "{#MyProgId}"; ValueType: string; ValueData: "OneNoteMindMap.AddIn.Connect"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "{#MyProgId}\CLSID"; ValueType: string; ValueData: "{#MyGuid}"
-Root: HKCR; Subkey: "{#MyProgId}\CurVer"; ValueType: string; ValueData: "{#MyProgId}.1"
-Root: HKCR; Subkey: "{#MyProgId}.1"; ValueType: string; ValueData: "OneNoteMindMap.AddIn.Connect"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "{#MyProgId}.1\CLSID"; ValueType: string; ValueData: "{#MyGuid}"
+Root: {#ComRoot}; Subkey: "{#MyProgId}"; ValueType: string; ValueData: "OneNoteMindMap.AddIn.Connect"; Flags: uninsdeletekey
+Root: {#ComRoot}; Subkey: "{#MyProgId}\CLSID"; ValueType: string; ValueData: "{#MyGuid}"
+Root: {#ComRoot}; Subkey: "{#MyProgId}\CurVer"; ValueType: string; ValueData: "{#MyProgId}.1"
+Root: {#ComRoot}; Subkey: "{#MyProgId}.1"; ValueType: string; ValueData: "OneNoteMindMap.AddIn.Connect"; Flags: uninsdeletekey
+Root: {#ComRoot}; Subkey: "{#MyProgId}.1\CLSID"; ValueType: string; ValueData: "{#MyGuid}"
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"

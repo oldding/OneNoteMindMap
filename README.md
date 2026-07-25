@@ -53,8 +53,8 @@
 ## Installation
 
 1. Download the installer from [Releases](https://github.com/oldding/OneNoteMindMap/releases)
-   - Choose `OneNoteMindMapSetup-x64.exe` for 64-bit OneNote
-   - Choose `OneNoteMindMapSetup-x86.exe` for 32-bit OneNote
+   - Choose `OneNoteMindMapSetup-1.3.1-x64.exe` for 64-bit OneNote
+   - Choose `OneNoteMindMapSetup-1.3.1-x86.exe` for 32-bit OneNote
 2. Run the installer (admin privileges required)
 3. Restart OneNote
 4. You'll see a new **脑图** tab in the ribbon
