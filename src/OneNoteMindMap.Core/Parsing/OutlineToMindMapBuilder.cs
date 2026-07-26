@@ -136,6 +136,7 @@ namespace OneNoteMindMap.Core.Parsing
         {
             var nodes = new List<MindMapNode>();
             var lines = ExtractTextLines(oe).ToList();
+            var table = oe.Element(OneNs + "Table");
 
             MindMapNode current = null;
             foreach (var line in lines)
@@ -153,6 +154,23 @@ namespace OneNoteMindMap.Core.Parsing
                 }
             }
 
+            if (table != null)
+            {
+                var tableNode = CreateTableNode(table);
+                if (tableNode != null)
+                {
+                    if (current == null)
+                    {
+                        current = tableNode;
+                        nodes.Add(tableNode);
+                    }
+                    else
+                    {
+                        current.Children.Add(tableNode);
+                    }
+                }
+            }
+
             var children = oe.Element(OneNs + "OEChildren");
             if (children != null)
             {
@@ -164,6 +182,65 @@ namespace OneNoteMindMap.Core.Parsing
             }
 
             return nodes;
+        }
+
+        private static MindMapNode CreateTableNode(XElement table)
+        {
+            var rows = new List<List<string>>();
+            foreach (var row in table.Elements(OneNs + "Row"))
+            {
+                var cells = new List<string>();
+                foreach (var cell in row.Elements(OneNs + "Cell"))
+                {
+                    string value = string.Join(" ", cell
+                        .Descendants(OneNs + "T")
+                        .Select(t => StripHtml(t.Value).Trim())
+                        .Where(t => !string.IsNullOrWhiteSpace(t)));
+                    cells.Add(value);
+                }
+
+                if (cells.Any(c => !string.IsNullOrWhiteSpace(c)))
+                    rows.Add(cells);
+            }
+
+            if (rows.Count == 0)
+                return null;
+
+            int columnCount = rows.Max(r => r.Count);
+            var columnWidths = new int[columnCount];
+            foreach (var row in rows)
+            {
+                for (int i = 0; i < row.Count; i++)
+                    columnWidths[i] = Math.Min(
+                        24,
+                        Math.Max(columnWidths[i], TextDisplayWidthHelper.DisplayWidth(row[i])));
+            }
+
+            var output = new List<string>();
+            for (int rowIndex = 0; rowIndex < rows.Count; rowIndex++)
+            {
+                var row = rows[rowIndex];
+                var cells = new List<string>();
+                for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
+                {
+                    string value = columnIndex < row.Count ? row[columnIndex] : "";
+                    cells.Add(TextDisplayWidthHelper.PadRight(value, columnWidths[columnIndex]));
+                }
+
+                output.Add(string.Join(" │ ", cells).TrimEnd());
+                if (rowIndex == 0 && rows.Count > 1)
+                {
+                    output.Add(string.Join(
+                        "─┼─",
+                        columnWidths.Select(width => new string('─', Math.Max(1, width)))));
+                }
+            }
+
+            return new MindMapNode
+            {
+                Text = string.Join("\n", output),
+                ContentType = "TableText"
+            };
         }
 
         private static IEnumerable<string> ExtractTextLines(XElement oe)

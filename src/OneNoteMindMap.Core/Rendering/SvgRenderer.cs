@@ -48,7 +48,7 @@ namespace OneNoteMindMap.Core.Rendering
 
                 sb.AppendLine($"<rect x=\"{x:F1}\" y=\"{y:F1}\" width=\"{layout.Width:F1}\" height=\"{layout.Height:F1}\" rx=\"{rx:F1}\" ry=\"{ry:F1}\" fill=\"{fill}\" stroke=\"{theme.Border}\" stroke-width=\"1\"/>");
 
-                string displayText = TruncateText(node.Text, layout.Width - 16);
+                string displayText = TruncateText(node.Text);
                 sb.AppendLine($"<text x=\"{x + layout.Width / 2:F1}\" y=\"{y + layout.Height / 2:F1}\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"{theme.FontFamily}\" font-size=\"{fontSize}\" fill=\"{textColor}\">{EscapeXml(displayText)}</text>");
             }
 
@@ -57,16 +57,39 @@ namespace OneNoteMindMap.Core.Rendering
                 var parentNode = doc.Root.FindParentOf(layout.NodeId);
                 if (parentNode == null || !layoutDict.TryGetValue(parentNode.Id, out var parentLayout)) continue;
 
-                double x1 = parentLayout.AnchorRightX + offsetX;
-                double y1 = parentLayout.AnchorRightY + offsetY;
-                double x2 = layout.AnchorLeftX + offsetX;
-                double y2 = layout.AnchorLeftY + offsetY;
-                double cx1 = x1 + (x2 - x1) * 0.5;
-                double cy1 = y1;
-                double cx2 = cx1;
-                double cy2 = y2;
+                var anchors = ConnectorAnchorCalculator.Calculate(parentLayout, layout);
+                double x1 = anchors.StartX + offsetX;
+                double y1 = anchors.StartY + offsetY;
+                double x2 = anchors.EndX + offsetX;
+                double y2 = anchors.EndY + offsetY;
 
-                sb.AppendLine($"<path d=\"M{x1:F1},{y1:F1} C{cx1:F1},{cy1:F1} {cx2:F1},{cy2:F1} {x2:F1},{y2:F1}\" fill=\"none\" stroke=\"{theme.Line}\" stroke-width=\"2\"/>");
+                if (doc.Settings?.ConnectionStyle == "Orthogonal")
+                {
+                    if (anchors.IsVertical)
+                    {
+                        double middleY = y1 + (y2 - y1) * 0.5;
+                        sb.AppendLine($"<path d=\"M{x1:F1},{y1:F1} L{x1:F1},{middleY:F1} L{x2:F1},{middleY:F1} L{x2:F1},{y2:F1}\" fill=\"none\" stroke=\"{theme.Line}\" stroke-width=\"2\"/>");
+                    }
+                    else
+                    {
+                        double middleX = x1 + (x2 - x1) * 0.5;
+                        sb.AppendLine($"<path d=\"M{x1:F1},{y1:F1} L{middleX:F1},{y1:F1} L{middleX:F1},{y2:F1} L{x2:F1},{y2:F1}\" fill=\"none\" stroke=\"{theme.Line}\" stroke-width=\"2\"/>");
+                    }
+                }
+                else if (doc.Settings?.ConnectionStyle == "Straight")
+                {
+                    sb.AppendLine($"<path d=\"M{x1:F1},{y1:F1} L{x2:F1},{y2:F1}\" fill=\"none\" stroke=\"{theme.Line}\" stroke-width=\"2\"/>");
+                }
+                else if (anchors.IsVertical)
+                {
+                    double middleY = y1 + (y2 - y1) * 0.5;
+                    sb.AppendLine($"<path d=\"M{x1:F1},{y1:F1} C{x1:F1},{middleY:F1} {x2:F1},{middleY:F1} {x2:F1},{y2:F1}\" fill=\"none\" stroke=\"{theme.Line}\" stroke-width=\"2\"/>");
+                }
+                else
+                {
+                    double middleX = x1 + (x2 - x1) * 0.5;
+                    sb.AppendLine($"<path d=\"M{x1:F1},{y1:F1} C{middleX:F1},{y1:F1} {middleX:F1},{y2:F1} {x2:F1},{y2:F1}\" fill=\"none\" stroke=\"{theme.Line}\" stroke-width=\"2\"/>");
+                }
             }
 
             sb.AppendLine("</svg>");
@@ -82,11 +105,15 @@ namespace OneNoteMindMap.Core.Rendering
             return theme.NodeFill;
         }
 
-        private static string TruncateText(string text, double maxWidth)
+        private static string TruncateText(string text)
         {
             if (string.IsNullOrEmpty(text)) return "";
-            if (text.Length <= 20) return text;
-            return text.Substring(0, 17) + "...";
+            string singleLine = text
+                .Replace("\r", " ")
+                .Replace("\n", " ")
+                .Trim();
+            if (singleLine.Length <= 20) return singleLine;
+            return singleLine.Substring(0, 17) + "...";
         }
 
         private static string EscapeXml(string s)

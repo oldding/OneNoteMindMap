@@ -12,37 +12,47 @@ namespace OneNoteMindMap.Editor
     /// </summary>
     public static class LinkGeometryBuilder
     {
-        public static PathGeometry Build(NodeLayout parent, NodeLayout child, double offsetX, double offsetY)
+        public static PathGeometry Build(
+            NodeLayout parent,
+            NodeLayout child,
+            double offsetX,
+            double offsetY,
+            string connectionStyle = "Curved")
         {
-            double x1, y1, x2, y2;
-            bool vertical = false;
-
-            if (child.X >= parent.Right - 1)
-            {
-                // Child on the right side
-                x1 = parent.Right; y1 = parent.CenterY;
-                x2 = child.X; y2 = child.CenterY;
-            }
-            else if (child.Right <= parent.X + 1)
-            {
-                // Child on the left side
-                x1 = parent.X; y1 = parent.CenterY;
-                x2 = child.Right; y2 = child.CenterY;
-            }
-            else
-            {
-                // Child below parent (org chart)
-                vertical = true;
-                x1 = parent.CenterX; y1 = parent.Bottom;
-                x2 = child.CenterX; y2 = child.Y;
-            }
+            var anchors = ConnectorAnchorCalculator.Calculate(parent, child);
+            double x1 = anchors.StartX;
+            double y1 = anchors.StartY;
+            double x2 = anchors.EndX;
+            double y2 = anchors.EndY;
 
             x1 += offsetX; y1 += offsetY;
             x2 += offsetX; y2 += offsetY;
 
             var figure = new PathFigure { StartPoint = new Point(x1, y1) };
 
-            if (vertical)
+            if (connectionStyle == "Orthogonal")
+            {
+                var segment = new PolyLineSegment { IsStroked = true };
+                if (anchors.IsVertical)
+                {
+                    double middleY = y1 + (y2 - y1) * 0.5;
+                    segment.Points.Add(new Point(x1, middleY));
+                    segment.Points.Add(new Point(x2, middleY));
+                }
+                else
+                {
+                    double middleX = x1 + (x2 - x1) * 0.5;
+                    segment.Points.Add(new Point(middleX, y1));
+                    segment.Points.Add(new Point(middleX, y2));
+                }
+                segment.Points.Add(new Point(x2, y2));
+                figure.Segments.Add(segment);
+            }
+            else if (connectionStyle == "Straight")
+            {
+                figure.Segments.Add(new LineSegment(new Point(x2, y2), true));
+            }
+            else if (anchors.IsVertical)
             {
                 double my = y1 + (y2 - y1) * 0.5;
                 figure.Segments.Add(new BezierSegment(

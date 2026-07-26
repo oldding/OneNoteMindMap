@@ -27,7 +27,19 @@ namespace OneNoteMindMap.Core.Layout
                     LayoutRightTree(root, null, 0, 0, layouts);
                     break;
             }
+            ApplyManualOffsets(root, layouts);
             return layouts;
+        }
+
+        private static void ApplyManualOffsets(MindMapNode root, List<NodeLayout> layouts)
+        {
+            foreach (var layout in layouts)
+            {
+                var node = root.FindById(layout.NodeId);
+                if (node == null) continue;
+                layout.X += node.ManualOffsetX;
+                layout.Y += node.ManualOffsetY;
+            }
         }
 
         private double CalculateSubtreeHeight(MindMapNode node)

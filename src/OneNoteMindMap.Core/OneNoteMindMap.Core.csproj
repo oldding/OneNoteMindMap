@@ -44,11 +44,13 @@
     <Compile Include="Serialization\MindMapSerializer.cs" />
     <Compile Include="Serialization\MindMapPayloadCodec.cs" />
     <Compile Include="Layout\MindMapLayoutEngine.cs" />
+    <Compile Include="Layout\ConnectorAnchorCalculator.cs" />
     <Compile Include="Layout\LayoutOptions.cs" />
     <Compile Include="Layout\NodeLayout.cs" />
     <Compile Include="Rendering\SvgRenderer.cs" />
     <Compile Include="Rendering\Theme.cs" />
     <Compile Include="Parsing\OutlineToMindMapBuilder.cs" />
+    <Compile Include="Parsing\TextDisplayWidthHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
