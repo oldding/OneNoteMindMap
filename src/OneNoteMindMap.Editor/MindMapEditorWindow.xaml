@@ -4,8 +4,7 @@
         Title="OneNote Mind Map Editor"
         Width="1024" Height="768"
         WindowStartupLocation="CenterScreen"
-        Background="#F5F5F5"
-        InputMethod.IsInputMethodEnabled="False">
+        Background="#F5F5F5">
     <Window.Resources>
         <Style TargetType="Button" x:Key="ToolbarButton">
             <Setter Property="Padding" Value="8,4"/>
@@ -52,6 +51,12 @@
                     <ComboBoxItem Tag="Rounded">圆角</ComboBoxItem>
                     <ComboBoxItem Tag="Rectangle">矩形</ComboBoxItem>
                     <ComboBoxItem Tag="Pill">胶囊</ComboBoxItem>
+                </ComboBox>
+                <Label x:Name="LblConnection" Content="连接线:" VerticalAlignment="Center" Margin="4,0"/>
+                <ComboBox x:Name="ConnectionCombo" SelectedIndex="0" Width="90" VerticalAlignment="Center" SelectionChanged="Connection_Changed" InputMethod.IsInputMethodEnabled="False">
+                    <ComboBoxItem Tag="Curved">曲线</ComboBoxItem>
+                    <ComboBoxItem Tag="Straight">直线</ComboBoxItem>
+                    <ComboBoxItem Tag="Orthogonal">折线</ComboBoxItem>
                 </ComboBox>
             </WrapPanel>
         </Border>

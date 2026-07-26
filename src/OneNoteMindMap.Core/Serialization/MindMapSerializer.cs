@@ -29,6 +29,7 @@ namespace OneNoteMindMap.Core.Serialization
             sb.AppendLine($"    \"layout\": \"{Esc(doc.Settings?.Layout)}\",");
             sb.AppendLine($"    \"theme\": \"{Esc(doc.Settings?.Theme)}\",");
             sb.AppendLine($"    \"nodeShape\": \"{Esc(doc.Settings?.NodeShape)}\",");
+            sb.AppendLine($"    \"connectionStyle\": \"{Esc(doc.Settings?.ConnectionStyle ?? "Curved")}\",");
             sb.AppendLine($"    \"direction\": \"{Esc(doc.Settings?.Direction)}\",");
             sb.AppendLine($"    \"nodeWidth\": {(doc.Settings?.NodeWidth ?? 160).ToString(CultureInfo.InvariantCulture)},");
             sb.AppendLine($"    \"nodeHeight\": {(doc.Settings?.NodeHeight ?? 44).ToString(CultureInfo.InvariantCulture)},");
@@ -75,6 +76,7 @@ namespace OneNoteMindMap.Core.Serialization
                     if (set.TryGetValue("layout", out var lay)) doc.Settings.Layout = lay as string ?? "RightTree";
                     if (set.TryGetValue("theme", out var thm)) doc.Settings.Theme = thm as string ?? "Default";
                     if (set.TryGetValue("nodeShape", out var shp)) doc.Settings.NodeShape = shp as string ?? "Rounded";
+                    if (set.TryGetValue("connectionStyle", out var con)) doc.Settings.ConnectionStyle = con as string ?? "Curved";
                     if (set.TryGetValue("direction", out var dir)) doc.Settings.Direction = dir as string ?? "Right";
                     if (set.TryGetValue("nodeWidth", out var nw)) doc.Settings.NodeWidth = ToDouble(nw);
                     if (set.TryGetValue("nodeHeight", out var nh)) doc.Settings.NodeHeight = ToDouble(nh);
@@ -107,11 +109,14 @@ namespace OneNoteMindMap.Core.Serialization
             sb.AppendLine($"{inner}\"id\": \"{Esc(node.Id)}\",");
             sb.AppendLine($"{inner}\"text\": \"{Esc(node.Text)}\",");
             sb.AppendLine($"{inner}\"note\": \"{Esc(node.Note)}\",");
+            sb.AppendLine($"{inner}\"contentType\": \"{Esc(node.ContentType ?? "Text")}\",");
             sb.AppendLine($"{inner}\"collapsed\": {(node.Collapsed ? "true" : "false")},");
             sb.AppendLine($"{inner}\"color\": \"{Esc(node.Color)}\",");
             sb.AppendLine($"{inner}\"icon\": \"{Esc(node.Icon)}\",");
             sb.AppendLine($"{inner}\"link\": \"{Esc(node.Link)}\",");
             sb.AppendLine($"{inner}\"sourceObjectId\": \"{Esc(node.SourceObjectId)}\",");
+            sb.AppendLine($"{inner}\"manualOffsetX\": {node.ManualOffsetX.ToString(CultureInfo.InvariantCulture)},");
+            sb.AppendLine($"{inner}\"manualOffsetY\": {node.ManualOffsetY.ToString(CultureInfo.InvariantCulture)},");
 
             sb.Append($"{inner}\"children\": [");
             if (node.Children.Count > 0)
@@ -140,11 +145,14 @@ namespace OneNoteMindMap.Core.Serialization
             if (obj.TryGetValue("id", out var id)) node.Id = id as string ?? node.Id;
             if (obj.TryGetValue("text", out var text)) node.Text = text as string ?? "";
             if (obj.TryGetValue("note", out var note)) node.Note = note as string ?? "";
+            if (obj.TryGetValue("contentType", out var contentType)) node.ContentType = contentType as string ?? "Text";
             if (obj.TryGetValue("collapsed", out var col)) node.Collapsed = col is bool b && b;
             if (obj.TryGetValue("color", out var color)) node.Color = color as string ?? "";
             if (obj.TryGetValue("icon", out var icon)) node.Icon = icon as string ?? "";
             if (obj.TryGetValue("link", out var link)) node.Link = link as string ?? "";
             if (obj.TryGetValue("sourceObjectId", out var soid)) node.SourceObjectId = soid as string ?? "";
+            if (obj.TryGetValue("manualOffsetX", out var offsetX)) node.ManualOffsetX = ToDouble(offsetX);
+            if (obj.TryGetValue("manualOffsetY", out var offsetY)) node.ManualOffsetY = ToDouble(offsetY);
 
             if (obj.TryGetValue("children", out var children) && children is List<object> childList)
             {

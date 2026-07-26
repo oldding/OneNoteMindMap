@@ -19,6 +19,8 @@
 - **Three layouts**: RightTree, BothSides, OrgChart
 - **Five themes**: Default, Purple, Minimal, Fresh, Warm
 - **Three node shapes**: Rounded, Rectangle, Pill
+- **Three connection styles**: Curved, Straight, Orthogonal
+- **Lightweight tables**: OneNote tables are converted to compact text nodes
 - **Export**: Save as PNG or SVG
 
 ### Ribbon Buttons (8 total)
@@ -53,8 +55,8 @@
 ## Installation
 
 1. Download the installer from [Releases](https://github.com/oldding/OneNoteMindMap/releases)
-   - Choose `OneNoteMindMapSetup-1.3.1-x64.exe` for 64-bit OneNote
-   - Choose `OneNoteMindMapSetup-1.3.1-x86.exe` for 32-bit OneNote
+   - Choose `OneNoteMindMapSetup-1.4.1-x64.exe` for 64-bit OneNote
+   - Choose `OneNoteMindMapSetup-1.4.1-x86.exe` for 32-bit OneNote
 2. Run the installer (admin privileges required)
 3. Restart OneNote
 4. You'll see a new **脑图** tab in the ribbon

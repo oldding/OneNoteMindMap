@@ -8,12 +8,15 @@ namespace OneNoteMindMap.Core.Model
         public string Id { get; set; } = Guid.NewGuid().ToString("N");
         public string Text { get; set; } = "";
         public string Note { get; set; } = "";
+        public string ContentType { get; set; } = "Text";
         public List<MindMapNode> Children { get; set; } = new List<MindMapNode>();
         public bool Collapsed { get; set; }
         public string Color { get; set; } = "";
         public string Icon { get; set; } = "";
         public string Link { get; set; } = "";
         public string SourceObjectId { get; set; } = "";
+        public double ManualOffsetX { get; set; }
+        public double ManualOffsetY { get; set; }
 
         public bool IsLeaf => Children.Count == 0;
         public bool HasChildren => Children.Count > 0;
@@ -26,11 +29,14 @@ namespace OneNoteMindMap.Core.Model
                 Id = Id,
                 Text = Text,
                 Note = Note,
+                ContentType = ContentType,
                 Collapsed = Collapsed,
                 Color = Color,
                 Icon = Icon,
                 Link = Link,
                 SourceObjectId = SourceObjectId,
+                ManualOffsetX = ManualOffsetX,
+                ManualOffsetY = ManualOffsetY,
                 Depth = Depth
             };
             foreach (var child in Children)
@@ -77,6 +83,40 @@ namespace OneNoteMindMap.Core.Model
                 if (found != null) return found;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Moves a node and its entire subtree under a different parent.
+        /// Returns false when the move would target the root, keep the same parent,
+        /// or create a cycle by moving a node under one of its descendants.
+        /// </summary>
+        public bool ReparentNode(string nodeId, string newParentId)
+        {
+            if (string.IsNullOrEmpty(nodeId) ||
+                string.IsNullOrEmpty(newParentId) ||
+                nodeId == Id)
+                return false;
+
+            var node = FindById(nodeId);
+            var newParent = FindById(newParentId);
+            if (node == null || newParent == null || node == newParent)
+                return false;
+
+            if (node.FindById(newParentId) != null)
+                return false;
+
+            var oldParent = FindParentOf(nodeId);
+            if (oldParent == null || oldParent == newParent)
+                return false;
+
+            if (!oldParent.Children.Remove(node))
+                return false;
+
+            node.ManualOffsetX = 0;
+            node.ManualOffsetY = 0;
+            newParent.Collapsed = false;
+            newParent.Children.Add(node);
+            return true;
         }
     }
 }

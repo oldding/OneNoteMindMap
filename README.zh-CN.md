@@ -19,6 +19,8 @@
 - **三种布局**：右树、对称、组织架构
 - **五种主题**：默认、紫色、简约、清新、温暖
 - **三种节点形状**：圆角、矩形、胶囊
+- **三种连接线**：曲线、直线、折线
+- **轻量表格**：OneNote 表格转换为紧凑的文本节点
 - **导出**：支持导出为 PNG 或 SVG
 
 ### 功能区按钮（共 8 个）
@@ -53,8 +55,8 @@
 ## 安装
 
 1. 从 [Releases](https://github.com/oldding/OneNoteMindMap/releases) 下载安装程序
-   - 64 位 OneNote 选择 `OneNoteMindMapSetup-1.3.1-x64.exe`
-   - 32 位 OneNote 选择 `OneNoteMindMapSetup-1.3.1-x86.exe`
+   - 64 位 OneNote 选择 `OneNoteMindMapSetup-1.4.1-x64.exe`
+   - 32 位 OneNote 选择 `OneNoteMindMapSetup-1.4.1-x86.exe`
 2. 运行安装程序（需要管理员权限）
 3. 重启 OneNote
 4. 在功能区可以看到新的 **脑图** 选项卡
