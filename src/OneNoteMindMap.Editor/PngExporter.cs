@@ -18,6 +18,12 @@ namespace OneNoteMindMap.Editor
             engine.Options.Layout = doc.Settings?.Layout ?? "RightTree";
             engine.Options.Theme = doc.Settings?.Theme ?? "Default";
             engine.Options.NodeShape = doc.Settings?.NodeShape ?? "Rounded";
+            engine.Options.ConnectionStyle = doc.Settings?.ConnectionStyle ?? "Curved";
+            engine.Options.NodeWidth = doc.Settings?.NodeWidth ?? 160;
+            engine.Options.NodeHeight = doc.Settings?.NodeHeight ?? 44;
+            engine.Options.HorizontalGap = doc.Settings?.HorizontalGap ?? 90;
+            engine.Options.VerticalGap = doc.Settings?.VerticalGap ?? 24;
+            engine.Options.LevelGap = doc.Settings?.LevelGap ?? 110;
             var layouts = engine.CalculateLayout(doc.Root);
             if (layouts.Count == 0) return null;
 
@@ -49,7 +55,12 @@ namespace OneNoteMindMap.Editor
                     Stroke = new SolidColorBrush(Color.FromRgb(0xAA, 0xAA, 0xAA)),
                     StrokeThickness = 2,
                     StrokeEndLineCap = PenLineCap.Round,
-                    Data = LinkGeometryBuilder.Build(parentLayout, layout, offsetX, offsetY),
+                    Data = LinkGeometryBuilder.Build(
+                        parentLayout,
+                        layout,
+                        offsetX,
+                        offsetY,
+                        engine.Options.ConnectionStyle),
                     IsHitTestVisible = false
                 });
             }

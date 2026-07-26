@@ -19,6 +19,8 @@
 - **Three layouts**: RightTree, BothSides, OrgChart
 - **Five themes**: Default, Purple, Minimal, Fresh, Warm
 - **Three node shapes**: Rounded, Rectangle, Pill
+- **Three connection styles**: Curved, Straight, Orthogonal
+- **Lightweight tables**: OneNote tables are converted to compact text nodes
 - **Export**: Save as PNG or SVG
 
 ### Ribbon Buttons (8 total)

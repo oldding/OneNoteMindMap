@@ -19,6 +19,20 @@ namespace OneNoteMindMap.Editor
         private string _pageId;
         private Point _lastMousePos;
         private NodeControl _selectedNode;
+        private NodeControl _dragNode;
+        private NodeControl _dropTarget;
+        private Point _dragStartPosition;
+        private double _dragStartLeft;
+        private double _dragStartTop;
+        private double _dragStartOffsetX;
+        private double _dragStartOffsetY;
+        private bool _isNodeDragging;
+        private System.Collections.Generic.List<NodeLayout> _currentLayouts =
+            new System.Collections.Generic.List<NodeLayout>();
+        private readonly System.Collections.Generic.Dictionary<string, System.Windows.Shapes.Path> _connectionPaths =
+            new System.Collections.Generic.Dictionary<string, System.Windows.Shapes.Path>();
+        private double _canvasOffsetX;
+        private double _canvasOffsetY;
         private double _zoomLevel = 1.0;
         private MindMapLayoutEngine _engine;
         private bool _isDirty;
@@ -32,7 +46,6 @@ namespace OneNoteMindMap.Editor
             _pageId = pageId;
             _engine = new MindMapLayoutEngine();
             InitializeComponent();
-            InputMethod.SetIsInputMethodEnabled(this, false);
             ApplyLocalization();
             ApplySettings();
             RenderMindMap();
@@ -61,6 +74,7 @@ namespace OneNoteMindMap.Editor
             LblLayout.Content = EditorStrings.LayoutLabel;
             LblTheme.Content = EditorStrings.ThemeLabel;
             LblShape.Content = EditorStrings.ShapeLabel;
+            LblConnection.Content = EditorStrings.ConnectionLabel;
 
             ((ComboBoxItem)LayoutCombo.Items[0]).Content = EditorStrings.LayoutRightTree;
             ((ComboBoxItem)LayoutCombo.Items[1]).Content = EditorStrings.LayoutBothSides;
@@ -73,6 +87,9 @@ namespace OneNoteMindMap.Editor
             ((ComboBoxItem)ShapeCombo.Items[0]).Content = EditorStrings.ShapeRounded;
             ((ComboBoxItem)ShapeCombo.Items[1]).Content = EditorStrings.ShapeRectangle;
             ((ComboBoxItem)ShapeCombo.Items[2]).Content = EditorStrings.ShapePill;
+            ((ComboBoxItem)ConnectionCombo.Items[0]).Content = EditorStrings.ConnectionCurved;
+            ((ComboBoxItem)ConnectionCombo.Items[1]).Content = EditorStrings.ConnectionStraight;
+            ((ComboBoxItem)ConnectionCombo.Items[2]).Content = EditorStrings.ConnectionOrthogonal;
 
             StatusText.Text = EditorStrings.Ready;
         }
@@ -153,6 +170,12 @@ namespace OneNoteMindMap.Editor
                 _engine.Options.Layout = _document.Settings.Layout ?? "RightTree";
                 _engine.Options.Theme = _document.Settings.Theme ?? "Default";
                 _engine.Options.NodeShape = _document.Settings.NodeShape ?? "Rounded";
+                _engine.Options.ConnectionStyle = _document.Settings.ConnectionStyle ?? "Curved";
+                _engine.Options.NodeWidth = _document.Settings.NodeWidth;
+                _engine.Options.NodeHeight = _document.Settings.NodeHeight;
+                _engine.Options.HorizontalGap = _document.Settings.HorizontalGap;
+                _engine.Options.VerticalGap = _document.Settings.VerticalGap;
+                _engine.Options.LevelGap = _document.Settings.LevelGap;
                 foreach (var item in LayoutCombo.Items)
                 {
                     if (item is ComboBoxItem cbi && cbi.Tag?.ToString() == _document.Settings.Layout)
@@ -177,6 +200,14 @@ namespace OneNoteMindMap.Editor
                         break;
                     }
                 }
+                foreach (var item in ConnectionCombo.Items)
+                {
+                    if (item is ComboBoxItem cbi && cbi.Tag?.ToString() == _document.Settings.ConnectionStyle)
+                    {
+                        ConnectionCombo.SelectedItem = item;
+                        break;
+                    }
+                }
             }
         }
 
@@ -186,8 +217,10 @@ namespace OneNoteMindMap.Editor
                 return;
 
             MainCanvas.Children.Clear();
+            _connectionPaths.Clear();
 
             var layouts = _engine.CalculateLayout(_document.Root);
+            _currentLayouts = layouts;
 
             if (layouts.Count == 0) return;
 
@@ -196,6 +229,8 @@ namespace OneNoteMindMap.Editor
 
             double offsetX = 60 - minX;
             double offsetY = 60 - minY;
+            _canvasOffsetX = offsetX;
+            _canvasOffsetY = offsetY;
 
             // Draw connection lines first so they never cover node hit testing.
             foreach (var layout in layouts.Where(l => l.Depth > 0))
@@ -211,10 +246,16 @@ namespace OneNoteMindMap.Editor
                     Stroke = new SolidColorBrush(Color.FromRgb(0xAA, 0xAA, 0xAA)),
                     StrokeThickness = 2,
                     StrokeEndLineCap = PenLineCap.Round,
-                    Data = LinkGeometryBuilder.Build(parentLayout, layout, offsetX, offsetY),
+                    Data = LinkGeometryBuilder.Build(
+                        parentLayout,
+                        layout,
+                        offsetX,
+                        offsetY,
+                        _engine.Options.ConnectionStyle),
                     IsHitTestVisible = false
                 };
                 MainCanvas.Children.Add(line);
+                _connectionPaths[layout.NodeId] = line;
             }
 
             foreach (var layout in layouts)
@@ -226,7 +267,10 @@ namespace OneNoteMindMap.Editor
                 Canvas.SetLeft(ctrl, layout.X + offsetX);
                 Canvas.SetTop(ctrl, layout.Y + offsetY);
                 ctrl.MouseDown += NodeCtrl_MouseDown;
+                ctrl.MouseMove += NodeCtrl_MouseMove;
+                ctrl.MouseUp += NodeCtrl_MouseUp;
                 ctrl.RequestEdit += NodeCtrl_RequestEdit;
+                ctrl.ContentChanged += NodeCtrl_ContentChanged;
                 MainCanvas.Children.Add(ctrl);
             }
 
@@ -285,10 +329,153 @@ namespace OneNoteMindMap.Editor
 
         private void NodeCtrl_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (sender is NodeControl ctrl)
+            if (sender is NodeControl ctrl && !ctrl.IsEditing && e.ChangedButton == MouseButton.Left)
             {
                 SelectNode(ctrl);
-                _lastMousePos = e.GetPosition(MainCanvas);
+                _dragNode = ctrl;
+                _dragStartPosition = e.GetPosition(MainCanvas);
+                _dragStartLeft = Canvas.GetLeft(ctrl);
+                _dragStartTop = Canvas.GetTop(ctrl);
+                _dragStartOffsetX = ctrl.Node.ManualOffsetX;
+                _dragStartOffsetY = ctrl.Node.ManualOffsetY;
+                _isNodeDragging = false;
+                ctrl.CaptureMouse();
+                e.Handled = true;
+            }
+        }
+
+        private void NodeCtrl_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_dragNode == null || sender != _dragNode || e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            var position = e.GetPosition(MainCanvas);
+            double deltaX = position.X - _dragStartPosition.X;
+            double deltaY = position.Y - _dragStartPosition.Y;
+
+            if (!_isNodeDragging)
+            {
+                if (Math.Abs(deltaX) < SystemParameters.MinimumHorizontalDragDistance &&
+                    Math.Abs(deltaY) < SystemParameters.MinimumVerticalDragDistance)
+                    return;
+
+                _isNodeDragging = true;
+            }
+
+            Canvas.SetLeft(_dragNode, _dragStartLeft + deltaX);
+            Canvas.SetTop(_dragNode, _dragStartTop + deltaY);
+            _dragNode.Node.ManualOffsetX = _dragStartOffsetX + deltaX;
+            _dragNode.Node.ManualOffsetY = _dragStartOffsetY + deltaY;
+
+            var layout = _currentLayouts.FirstOrDefault(l => l.NodeId == _dragNode.Node.Id);
+            if (layout != null)
+            {
+                layout.X = _dragStartLeft + deltaX - _canvasOffsetX;
+                layout.Y = _dragStartTop + deltaY - _canvasOffsetY;
+            }
+
+            RefreshConnectionLines();
+            UpdateDropTarget(position);
+            e.Handled = true;
+        }
+
+        private void NodeCtrl_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_dragNode == null || sender != _dragNode || e.ChangedButton != MouseButton.Left)
+                return;
+
+            string nodeId = _dragNode.Node.Id;
+            bool moved = _isNodeDragging;
+            string dropTargetId = _dropTarget?.Node.Id;
+            ClearDropTarget();
+
+            if (_dragNode.IsMouseCaptured)
+                _dragNode.ReleaseMouseCapture();
+
+            _dragNode = null;
+            _isNodeDragging = false;
+
+            if (moved)
+            {
+                _isDirty = true;
+                if (!string.IsNullOrEmpty(dropTargetId))
+                    _document.Root.ReparentNode(nodeId, dropTargetId);
+
+                RenderMindMap();
+                var movedControl = MainCanvas.Children
+                    .OfType<NodeControl>()
+                    .FirstOrDefault(ctrl => ctrl.Node.Id == nodeId);
+                SelectNode(movedControl);
+            }
+
+            e.Handled = true;
+        }
+
+        private void UpdateDropTarget(Point position)
+        {
+            var candidate = FindDropTarget(position);
+            if (_dropTarget == candidate)
+                return;
+
+            ClearDropTarget();
+            _dropTarget = candidate;
+            if (_dropTarget != null)
+                _dropTarget.IsDropTarget = true;
+        }
+
+        private NodeControl FindDropTarget(Point position)
+        {
+            if (_dragNode == null || _document.Root == _dragNode.Node)
+                return null;
+
+            var currentParent = _document.Root.FindParentOf(_dragNode.Node.Id);
+
+            foreach (var candidate in MainCanvas.Children.OfType<NodeControl>())
+            {
+                if (candidate == _dragNode ||
+                    candidate.Node == currentParent ||
+                    _dragNode.Node.FindById(candidate.Node.Id) != null)
+                    continue;
+
+                double left = Canvas.GetLeft(candidate);
+                double top = Canvas.GetTop(candidate);
+                double width = candidate.ActualWidth > 0 ? candidate.ActualWidth : candidate.Width;
+                double height = candidate.ActualHeight > 0 ? candidate.ActualHeight : candidate.Height;
+
+                if (position.X >= left && position.X <= left + width &&
+                    position.Y >= top && position.Y <= top + height)
+                    return candidate;
+            }
+
+            return null;
+        }
+
+        private void ClearDropTarget()
+        {
+            if (_dropTarget != null)
+                _dropTarget.IsDropTarget = false;
+            _dropTarget = null;
+        }
+
+        private void RefreshConnectionLines()
+        {
+            foreach (var layout in _currentLayouts.Where(l => l.Depth > 0))
+            {
+                if (!_connectionPaths.TryGetValue(layout.NodeId, out var line))
+                    continue;
+
+                var parentNode = _document.Root.FindParentOf(layout.NodeId);
+                if (parentNode == null) continue;
+
+                var parentLayout = _currentLayouts.FirstOrDefault(l => l.NodeId == parentNode.Id);
+                if (parentLayout == null) continue;
+
+                line.Data = LinkGeometryBuilder.Build(
+                    parentLayout,
+                    layout,
+                    _canvasOffsetX,
+                    _canvasOffsetY,
+                    _engine.Options.ConnectionStyle);
             }
         }
 
@@ -299,6 +486,20 @@ namespace OneNoteMindMap.Editor
                 SelectNode(ctrl);
                 ctrl.EnterEditMode();
             }
+        }
+
+        private void NodeCtrl_ContentChanged(object sender, EventArgs e)
+        {
+            if (!(sender is NodeControl ctrl))
+                return;
+
+            string nodeId = ctrl.Node.Id;
+            _isDirty = true;
+            RenderMindMap();
+            var editedControl = MainCanvas.Children
+                .OfType<NodeControl>()
+                .FirstOrDefault(item => item.Node.Id == nodeId);
+            SelectNode(editedControl);
         }
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
@@ -414,12 +615,9 @@ namespace OneNoteMindMap.Editor
         {
             try
             {
-                _document.Settings = new MindMapSettings
-                {
-                    Layout = ((ComboBoxItem)LayoutCombo.SelectedItem)?.Tag?.ToString() ?? "RightTree",
-                    Theme = ((ComboBoxItem)ThemeCombo.SelectedItem)?.Tag?.ToString() ?? "Default",
-                    NodeShape = ((ComboBoxItem)ShapeCombo.SelectedItem)?.Tag?.ToString() ?? "Rounded"
-                };
+                if (_document.Settings == null)
+                    _document.Settings = new MindMapSettings();
+                ApplyToolbarSettings(_document.Settings);
 
                 IsSaved = true;
                 StatusText.Text = EditorStrings.SavedToOneNote;
@@ -443,7 +641,7 @@ namespace OneNoteMindMap.Editor
             {
                 try
                 {
-                    var pngBytes = PngExporter.Export(_document, 2.0);
+                    var pngBytes = PngExporter.Export(CreateExportDocument(), 2.0);
                     if (pngBytes != null)
                     {
                         File.WriteAllBytes(dialog.FileName, pngBytes);
@@ -469,8 +667,9 @@ namespace OneNoteMindMap.Editor
             {
                 try
                 {
-                    var layouts = _engine.CalculateLayout(_document.Root);
-                    string svg = SvgRenderer.Render(_document, layouts);
+                    var exportDocument = CreateExportDocument();
+                    var layouts = _engine.CalculateLayout(exportDocument.Root);
+                    string svg = SvgRenderer.Render(exportDocument, layouts);
                     File.WriteAllText(dialog.FileName, svg);
                     StatusText.Text = EditorStrings.SvgExported;
                 }
@@ -486,6 +685,7 @@ namespace OneNoteMindMap.Editor
             if (_engine != null && LayoutCombo?.SelectedItem is ComboBoxItem item)
             {
                 _engine.Options.Layout = item.Tag?.ToString() ?? "RightTree";
+                if (IsLoaded) _isDirty = true;
                 RenderMindMap();
             }
         }
@@ -494,6 +694,7 @@ namespace OneNoteMindMap.Editor
         {
             if (_engine != null && ThemeCombo?.SelectedItem is ComboBoxItem item)
                 _engine.Options.Theme = item.Tag?.ToString() ?? "Default";
+            if (IsLoaded) _isDirty = true;
             RenderMindMap();
         }
 
@@ -501,7 +702,31 @@ namespace OneNoteMindMap.Editor
         {
             if (_engine != null && ShapeCombo?.SelectedItem is ComboBoxItem item)
                 _engine.Options.NodeShape = item.Tag?.ToString() ?? "Rounded";
+            if (IsLoaded) _isDirty = true;
             RenderMindMap();
+        }
+
+        private void Connection_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            if (_engine != null && ConnectionCombo?.SelectedItem is ComboBoxItem item)
+                _engine.Options.ConnectionStyle = item.Tag?.ToString() ?? "Curved";
+            if (IsLoaded) _isDirty = true;
+            RenderMindMap();
+        }
+
+        private MindMapDocument CreateExportDocument()
+        {
+            var exportDocument = _document.Clone();
+            ApplyToolbarSettings(exportDocument.Settings);
+            return exportDocument;
+        }
+
+        private void ApplyToolbarSettings(MindMapSettings settings)
+        {
+            settings.Layout = ((ComboBoxItem)LayoutCombo.SelectedItem)?.Tag?.ToString() ?? "RightTree";
+            settings.Theme = ((ComboBoxItem)ThemeCombo.SelectedItem)?.Tag?.ToString() ?? "Default";
+            settings.NodeShape = ((ComboBoxItem)ShapeCombo.SelectedItem)?.Tag?.ToString() ?? "Rounded";
+            settings.ConnectionStyle = ((ComboBoxItem)ConnectionCombo.SelectedItem)?.Tag?.ToString() ?? "Curved";
         }
 
         private static T FindVisualParent<T>(DependencyObject child) where T : DependencyObject

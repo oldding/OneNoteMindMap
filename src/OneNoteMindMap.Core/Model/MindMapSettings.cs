@@ -5,6 +5,7 @@ namespace OneNoteMindMap.Core.Model
         public string Layout { get; set; } = "RightTree";
         public string Theme { get; set; } = "Default";
         public string NodeShape { get; set; } = "Rounded";
+        public string ConnectionStyle { get; set; } = "Curved";
         public string Direction { get; set; } = "Right";
         public double CanvasZoom { get; set; } = 1.0;
         public double NodeWidth { get; set; } = 160;
@@ -20,6 +21,7 @@ namespace OneNoteMindMap.Core.Model
                 Layout = Layout,
                 Theme = Theme,
                 NodeShape = NodeShape,
+                ConnectionStyle = ConnectionStyle,
                 Direction = Direction,
                 CanvasZoom = CanvasZoom,
                 NodeWidth = NodeWidth,

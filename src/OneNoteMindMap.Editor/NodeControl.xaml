@@ -8,7 +8,7 @@
             BorderThickness="1"
             CornerRadius="6"
             Padding="8,4"
-            Cursor="Hand"
+            Cursor="SizeAll"
             MouseLeftButtonDown="Border_MouseLeftButtonDown">
         <Grid>
             <TextBlock x:Name="TextBlock"
@@ -17,13 +17,15 @@
                        TextTrimming="CharacterEllipsis"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Center"
+                       TextAlignment="Center"
                        FontSize="13"
                        Foreground="#333333"/>
             <TextBox x:Name="EditBox"
-                     InputMethod.IsInputMethodEnabled="False"
+                     InputMethod.IsInputMethodEnabled="True"
                      Visibility="Collapsed"
                      Text=""
                      AcceptsReturn="False"
+                     TextWrapping="NoWrap"
                      BorderThickness="1"
                      BorderBrush="#0078D4"
                      VerticalAlignment="Center"
