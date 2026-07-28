@@ -27,6 +27,8 @@ namespace OneNoteMindMap.Editor
             new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC));
         private static readonly SolidColorBrush RootTextBrush =
             new SolidColorBrush(Colors.White);
+        private readonly SolidColorBrush _classicBranchBrush;
+        private readonly bool _isClassicMindMap;
         private bool _isSelected;
         private bool _isDropTarget;
 
@@ -50,17 +52,37 @@ namespace OneNoteMindMap.Editor
             }
         }
 
-        public NodeControl(MindMapNode node, NodeLayout layout, LayoutOptions options)
+        public NodeControl(
+            MindMapNode node,
+            NodeLayout layout,
+            LayoutOptions options,
+            string branchColor = "#555555")
         {
             InitializeComponent();
             Node = node;
             Layout = layout;
             Options = options;
+            _isClassicMindMap = options.ConnectionStyle == "ClassicMindMap";
+            _classicBranchBrush = new SolidColorBrush(
+                (Color)ColorConverter.ConvertFromString(branchColor));
 
             TextBlock.Text = ToSingleLine(node.Text);
             ApplyStyle();
 
-            if (layout.Depth == 0)
+            if (_isClassicMindMap)
+            {
+                TextBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
+                TextBlock.TextAlignment = layout.Depth == 0
+                    ? TextAlignment.Center
+                    : TextAlignment.Left;
+                TextBlock.VerticalAlignment = VerticalAlignment.Bottom;
+                TextBlock.Margin = new Thickness(4, 0, 4, 5);
+                TextBlock.FontWeight = layout.Depth <= 1
+                    ? FontWeights.SemiBold
+                    : FontWeights.Normal;
+                TextBlock.FontSize = layout.Depth == 0 ? 18 : 13;
+            }
+            else if (layout.Depth == 0)
             {
                 TextBlock.Foreground = RootTextBrush;
                 NodeBorder.Height = 50;
@@ -68,12 +90,31 @@ namespace OneNoteMindMap.Editor
             }
 
             this.Width = options.NodeWidth;
-            this.Height = layout.Depth == 0 ? 50 : options.NodeHeight;
+            this.Height = _isClassicMindMap
+                ? options.NodeHeight
+                : layout.Depth == 0 ? 50 : options.NodeHeight;
         }
 
         private void ApplyStyle()
         {
             var theme = ThemeManager.GetTheme(Options.Theme);
+
+            if (_isClassicMindMap)
+            {
+                NodeBorder.Background = Brushes.Transparent;
+                NodeBorder.BorderBrush = Layout.Depth == 0
+                    ? Brushes.Transparent
+                    : _classicBranchBrush;
+                NodeBorder.BorderThickness = Layout.Depth == 0
+                    ? new Thickness(0)
+                    : new Thickness(0, 0, 0, 2);
+                NodeBorder.CornerRadius = new CornerRadius(0);
+                NodeBorder.Padding = new Thickness(4, 2, 4, 0);
+                TextBlock.Foreground = new SolidColorBrush(
+                    (Color)ColorConverter.ConvertFromString(theme.NodeText));
+                return;
+            }
+
             string fill = Layout.Depth == 0
                 ? theme.RootFill
                 : Layout.Depth == 1 ? theme.Level1Fill
@@ -114,8 +155,12 @@ namespace OneNoteMindMap.Editor
             }
             else
             {
-                NodeBorder.BorderBrush = DefaultBorderBrush;
-                NodeBorder.BorderThickness = new Thickness(1);
+                NodeBorder.BorderBrush = _isClassicMindMap && Layout.Depth > 0
+                    ? _classicBranchBrush
+                    : DefaultBorderBrush;
+                NodeBorder.BorderThickness = _isClassicMindMap && Layout.Depth > 0
+                    ? new Thickness(0, 0, 0, 2)
+                    : new Thickness(1);
             }
         }
 

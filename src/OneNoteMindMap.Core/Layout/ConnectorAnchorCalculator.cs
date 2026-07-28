@@ -18,6 +18,76 @@ namespace OneNoteMindMap.Core.Layout
     /// </summary>
     public static class ConnectorAnchorCalculator
     {
+        /// <summary>
+        /// Uses the classic connector anchors for curved links: the midpoint of
+        /// the facing node edges. This preserves the cleaner fan-out used before
+        /// free-form node dragging introduced direction-based edge intersections.
+        /// </summary>
+        public static ConnectorAnchors CalculateClassicCurve(NodeLayout parent, NodeLayout child)
+        {
+            if (child.X >= parent.Right - 1)
+            {
+                return new ConnectorAnchors
+                {
+                    StartX = parent.Right,
+                    StartY = parent.CenterY,
+                    EndX = child.X,
+                    EndY = child.CenterY,
+                    IsVertical = false
+                };
+            }
+
+            if (child.Right <= parent.X + 1)
+            {
+                return new ConnectorAnchors
+                {
+                    StartX = parent.X,
+                    StartY = parent.CenterY,
+                    EndX = child.Right,
+                    EndY = child.CenterY,
+                    IsVertical = false
+                };
+            }
+
+            bool childIsBelow = child.CenterY >= parent.CenterY;
+            return new ConnectorAnchors
+            {
+                StartX = parent.CenterX,
+                StartY = childIsBelow ? parent.Bottom : parent.Y,
+                EndX = child.CenterX,
+                EndY = childIsBelow ? child.Y : child.Bottom,
+                IsVertical = true
+            };
+        }
+
+        /// <summary>
+        /// Connects classic mind-map branches at the node baseline so the curve
+        /// flows directly into the colored line beneath each topic label.
+        /// </summary>
+        public static ConnectorAnchors CalculateClassicMindMap(NodeLayout parent, NodeLayout child)
+        {
+            if (child.CenterX >= parent.CenterX)
+            {
+                return new ConnectorAnchors
+                {
+                    StartX = parent.Right,
+                    StartY = parent.Bottom,
+                    EndX = child.X,
+                    EndY = child.Bottom,
+                    IsVertical = false
+                };
+            }
+
+            return new ConnectorAnchors
+            {
+                StartX = parent.X,
+                StartY = parent.Bottom,
+                EndX = child.Right,
+                EndY = child.Bottom,
+                IsVertical = false
+            };
+        }
+
         public static ConnectorAnchors Calculate(NodeLayout parent, NodeLayout child)
         {
             double deltaX = child.CenterX - parent.CenterX;

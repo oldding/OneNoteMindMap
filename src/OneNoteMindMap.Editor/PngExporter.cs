@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using OneNoteMindMap.Core.Layout;
 using OneNoteMindMap.Core.Model;
+using OneNoteMindMap.Core.Rendering;
 
 namespace OneNoteMindMap.Editor
 {
@@ -19,6 +20,7 @@ namespace OneNoteMindMap.Editor
             engine.Options.Theme = doc.Settings?.Theme ?? "Default";
             engine.Options.NodeShape = doc.Settings?.NodeShape ?? "Rounded";
             engine.Options.ConnectionStyle = doc.Settings?.ConnectionStyle ?? "Curved";
+            engine.Options.EndpointStyle = doc.Settings?.EndpointStyle ?? "None";
             engine.Options.NodeWidth = doc.Settings?.NodeWidth ?? 160;
             engine.Options.NodeHeight = doc.Settings?.NodeHeight ?? 44;
             engine.Options.HorizontalGap = doc.Settings?.HorizontalGap ?? 90;
@@ -50,9 +52,13 @@ namespace OneNoteMindMap.Editor
                 var parentLayout = layouts.FirstOrDefault(l => l.NodeId == parentNode.Id);
                 if (parentLayout == null) continue;
 
+                string lineColor = engine.Options.ConnectionStyle == "ClassicMindMap"
+                    ? ClassicMindMapStyle.GetBranchColor(doc.Root, doc.Root.FindById(layout.NodeId))
+                    : "#AAAAAA";
+                var lineBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(lineColor));
                 canvas.Children.Add(new System.Windows.Shapes.Path
                 {
-                    Stroke = new SolidColorBrush(Color.FromRgb(0xAA, 0xAA, 0xAA)),
+                    Stroke = lineBrush,
                     StrokeThickness = 2,
                     StrokeEndLineCap = PenLineCap.Round,
                     Data = LinkGeometryBuilder.Build(
@@ -63,6 +69,20 @@ namespace OneNoteMindMap.Editor
                         engine.Options.ConnectionStyle),
                     IsHitTestVisible = false
                 });
+                canvas.Children.Add(new System.Windows.Shapes.Path
+                {
+                    Fill = lineBrush,
+                    Stroke = lineBrush,
+                    StrokeThickness = 1,
+                    Data = LinkEndpointBuilder.Build(
+                        parentLayout,
+                        layout,
+                        offsetX,
+                        offsetY,
+                        engine.Options.ConnectionStyle,
+                        engine.Options.EndpointStyle),
+                    IsHitTestVisible = false
+                });
             }
 
             foreach (var layout in layouts)
@@ -70,7 +90,8 @@ namespace OneNoteMindMap.Editor
                 var node = doc.Root.FindById(layout.NodeId);
                 if (node == null) continue;
 
-                var ctrl = new NodeControl(node, layout, engine.Options);
+                string branchColor = ClassicMindMapStyle.GetBranchColor(doc.Root, node);
+                var ctrl = new NodeControl(node, layout, engine.Options, branchColor);
                 Canvas.SetLeft(ctrl, layout.X + offsetX);
                 Canvas.SetTop(ctrl, layout.Y + offsetY);
                 canvas.Children.Add(ctrl);

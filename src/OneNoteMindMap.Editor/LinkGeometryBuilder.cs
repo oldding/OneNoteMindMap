@@ -12,6 +12,18 @@ namespace OneNoteMindMap.Editor
     /// </summary>
     public static class LinkGeometryBuilder
     {
+        public static ConnectorAnchors GetAnchors(
+            NodeLayout parent,
+            NodeLayout child,
+            string connectionStyle)
+        {
+            return connectionStyle == "ClassicMindMap"
+                ? ConnectorAnchorCalculator.CalculateClassicMindMap(parent, child)
+                : connectionStyle == "Curved"
+                    ? ConnectorAnchorCalculator.CalculateClassicCurve(parent, child)
+                    : ConnectorAnchorCalculator.Calculate(parent, child);
+        }
+
         public static PathGeometry Build(
             NodeLayout parent,
             NodeLayout child,
@@ -19,7 +31,7 @@ namespace OneNoteMindMap.Editor
             double offsetY,
             string connectionStyle = "Curved")
         {
-            var anchors = ConnectorAnchorCalculator.Calculate(parent, child);
+            var anchors = GetAnchors(parent, child, connectionStyle);
             double x1 = anchors.StartX;
             double y1 = anchors.StartY;
             double x2 = anchors.EndX;

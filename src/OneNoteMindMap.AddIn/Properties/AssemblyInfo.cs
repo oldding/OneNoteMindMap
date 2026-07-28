@@ -8,5 +8,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright © 2026 OneNoteMindMap Contributors")]
 [assembly: ComVisible(false)]
 [assembly: Guid("A4CEC0EF-4C6C-4CBD-9112-B83545EEADE8")]
-[assembly: AssemblyVersion("1.4.1.0")]
-[assembly: AssemblyFileVersion("1.4.1.0")]
+[assembly: AssemblyVersion("1.4.2.0")]
+[assembly: AssemblyFileVersion("1.4.2.0")]

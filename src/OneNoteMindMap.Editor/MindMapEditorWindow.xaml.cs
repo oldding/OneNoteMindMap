@@ -31,6 +31,8 @@ namespace OneNoteMindMap.Editor
             new System.Collections.Generic.List<NodeLayout>();
         private readonly System.Collections.Generic.Dictionary<string, System.Windows.Shapes.Path> _connectionPaths =
             new System.Collections.Generic.Dictionary<string, System.Windows.Shapes.Path>();
+        private readonly System.Collections.Generic.Dictionary<string, System.Windows.Shapes.Path> _endpointPaths =
+            new System.Collections.Generic.Dictionary<string, System.Windows.Shapes.Path>();
         private double _canvasOffsetX;
         private double _canvasOffsetY;
         private double _zoomLevel = 1.0;
@@ -75,6 +77,7 @@ namespace OneNoteMindMap.Editor
             LblTheme.Content = EditorStrings.ThemeLabel;
             LblShape.Content = EditorStrings.ShapeLabel;
             LblConnection.Content = EditorStrings.ConnectionLabel;
+            LblEndpoint.Content = EditorStrings.EndpointLabel;
 
             ((ComboBoxItem)LayoutCombo.Items[0]).Content = EditorStrings.LayoutRightTree;
             ((ComboBoxItem)LayoutCombo.Items[1]).Content = EditorStrings.LayoutBothSides;
@@ -90,6 +93,12 @@ namespace OneNoteMindMap.Editor
             ((ComboBoxItem)ConnectionCombo.Items[0]).Content = EditorStrings.ConnectionCurved;
             ((ComboBoxItem)ConnectionCombo.Items[1]).Content = EditorStrings.ConnectionStraight;
             ((ComboBoxItem)ConnectionCombo.Items[2]).Content = EditorStrings.ConnectionOrthogonal;
+            ((ComboBoxItem)ConnectionCombo.Items[3]).Content = EditorStrings.ConnectionClassicMindMap;
+            ((ComboBoxItem)EndpointCombo.Items[0]).Content = EditorStrings.EndpointNone;
+            ((ComboBoxItem)EndpointCombo.Items[1]).Content = EditorStrings.EndpointArrow;
+            ((ComboBoxItem)EndpointCombo.Items[2]).Content = EditorStrings.EndpointDoubleArrow;
+            ((ComboBoxItem)EndpointCombo.Items[3]).Content = EditorStrings.EndpointCircle;
+            ((ComboBoxItem)EndpointCombo.Items[4]).Content = EditorStrings.EndpointDiamond;
 
             StatusText.Text = EditorStrings.Ready;
         }
@@ -171,6 +180,7 @@ namespace OneNoteMindMap.Editor
                 _engine.Options.Theme = _document.Settings.Theme ?? "Default";
                 _engine.Options.NodeShape = _document.Settings.NodeShape ?? "Rounded";
                 _engine.Options.ConnectionStyle = _document.Settings.ConnectionStyle ?? "Curved";
+                _engine.Options.EndpointStyle = _document.Settings.EndpointStyle ?? "None";
                 _engine.Options.NodeWidth = _document.Settings.NodeWidth;
                 _engine.Options.NodeHeight = _document.Settings.NodeHeight;
                 _engine.Options.HorizontalGap = _document.Settings.HorizontalGap;
@@ -208,6 +218,15 @@ namespace OneNoteMindMap.Editor
                         break;
                     }
                 }
+                foreach (var item in EndpointCombo.Items)
+                {
+                    if (item is ComboBoxItem cbi && cbi.Tag?.ToString() == _document.Settings.EndpointStyle)
+                    {
+                        EndpointCombo.SelectedItem = item;
+                        break;
+                    }
+                }
+                EndpointCombo.IsEnabled = _engine.Options.ConnectionStyle != "ClassicMindMap";
             }
         }
 
@@ -218,6 +237,7 @@ namespace OneNoteMindMap.Editor
 
             MainCanvas.Children.Clear();
             _connectionPaths.Clear();
+            _endpointPaths.Clear();
 
             var layouts = _engine.CalculateLayout(_document.Root);
             _currentLayouts = layouts;
@@ -241,9 +261,12 @@ namespace OneNoteMindMap.Editor
                 var parentLayout = layouts.FirstOrDefault(l => l.NodeId == parentNode.Id);
                 if (parentLayout == null) continue;
 
+                string lineColor = _engine.Options.ConnectionStyle == "ClassicMindMap"
+                    ? ClassicMindMapStyle.GetBranchColor(_document.Root, _document.Root.FindById(layout.NodeId))
+                    : "#AAAAAA";
                 var line = new System.Windows.Shapes.Path
                 {
-                    Stroke = new SolidColorBrush(Color.FromRgb(0xAA, 0xAA, 0xAA)),
+                    Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString(lineColor)),
                     StrokeThickness = 2,
                     StrokeEndLineCap = PenLineCap.Round,
                     Data = LinkGeometryBuilder.Build(
@@ -256,6 +279,23 @@ namespace OneNoteMindMap.Editor
                 };
                 MainCanvas.Children.Add(line);
                 _connectionPaths[layout.NodeId] = line;
+
+                var endpoint = new System.Windows.Shapes.Path
+                {
+                    Fill = line.Stroke,
+                    Stroke = line.Stroke,
+                    StrokeThickness = 1,
+                    Data = LinkEndpointBuilder.Build(
+                        parentLayout,
+                        layout,
+                        offsetX,
+                        offsetY,
+                        _engine.Options.ConnectionStyle,
+                        _engine.Options.EndpointStyle),
+                    IsHitTestVisible = false
+                };
+                MainCanvas.Children.Add(endpoint);
+                _endpointPaths[layout.NodeId] = endpoint;
             }
 
             foreach (var layout in layouts)
@@ -263,7 +303,8 @@ namespace OneNoteMindMap.Editor
                 var node = _document.Root.FindById(layout.NodeId);
                 if (node == null) continue;
 
-                var ctrl = new NodeControl(node, layout, _engine.Options);
+                string branchColor = ClassicMindMapStyle.GetBranchColor(_document.Root, node);
+                var ctrl = new NodeControl(node, layout, _engine.Options, branchColor);
                 Canvas.SetLeft(ctrl, layout.X + offsetX);
                 Canvas.SetTop(ctrl, layout.Y + offsetY);
                 ctrl.MouseDown += NodeCtrl_MouseDown;
@@ -476,6 +517,17 @@ namespace OneNoteMindMap.Editor
                     _canvasOffsetX,
                     _canvasOffsetY,
                     _engine.Options.ConnectionStyle);
+
+                if (_endpointPaths.TryGetValue(layout.NodeId, out var endpoint))
+                {
+                    endpoint.Data = LinkEndpointBuilder.Build(
+                        parentLayout,
+                        layout,
+                        _canvasOffsetX,
+                        _canvasOffsetY,
+                        _engine.Options.ConnectionStyle,
+                        _engine.Options.EndpointStyle);
+                }
             }
         }
 
@@ -710,6 +762,16 @@ namespace OneNoteMindMap.Editor
         {
             if (_engine != null && ConnectionCombo?.SelectedItem is ComboBoxItem item)
                 _engine.Options.ConnectionStyle = item.Tag?.ToString() ?? "Curved";
+            if (EndpointCombo != null)
+                EndpointCombo.IsEnabled = _engine?.Options.ConnectionStyle != "ClassicMindMap";
+            if (IsLoaded) _isDirty = true;
+            RenderMindMap();
+        }
+
+        private void Endpoint_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            if (_engine != null && EndpointCombo?.SelectedItem is ComboBoxItem item)
+                _engine.Options.EndpointStyle = item.Tag?.ToString() ?? "None";
             if (IsLoaded) _isDirty = true;
             RenderMindMap();
         }
@@ -727,6 +789,7 @@ namespace OneNoteMindMap.Editor
             settings.Theme = ((ComboBoxItem)ThemeCombo.SelectedItem)?.Tag?.ToString() ?? "Default";
             settings.NodeShape = ((ComboBoxItem)ShapeCombo.SelectedItem)?.Tag?.ToString() ?? "Rounded";
             settings.ConnectionStyle = ((ComboBoxItem)ConnectionCombo.SelectedItem)?.Tag?.ToString() ?? "Curved";
+            settings.EndpointStyle = ((ComboBoxItem)EndpointCombo.SelectedItem)?.Tag?.ToString() ?? "None";
         }
 
         private static T FindVisualParent<T>(DependencyObject child) where T : DependencyObject

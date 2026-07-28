@@ -31,6 +31,7 @@ namespace OneNoteMindMap.Editor
         public static string ThemeLabel => If("主题:", "Theme:");
         public static string ShapeLabel => If("形状:", "Shape:");
         public static string ConnectionLabel => If("连接线:", "Line:");
+        public static string EndpointLabel => If("端点:", "Endpoint:");
 
         // Layout combo
         public static string LayoutRightTree => If("右侧树形", "Right Tree");
@@ -53,6 +54,13 @@ namespace OneNoteMindMap.Editor
         public static string ConnectionCurved => If("曲线", "Curved");
         public static string ConnectionStraight => If("直线", "Straight");
         public static string ConnectionOrthogonal => If("折线", "Orthogonal");
+        public static string ConnectionClassicMindMap => If("经典脑图", "Classic Mind Map");
+
+        public static string EndpointNone => If("无", "None");
+        public static string EndpointArrow => If("箭头", "Arrow");
+        public static string EndpointDoubleArrow => If("双向箭头", "Double Arrow");
+        public static string EndpointCircle => If("圆点", "Circle");
+        public static string EndpointDiamond => If("菱形", "Diamond");
 
         // Tooltips
         public static string TipAddSibling => If("添加同级节点 (Enter)", "Add sibling node (Enter)");

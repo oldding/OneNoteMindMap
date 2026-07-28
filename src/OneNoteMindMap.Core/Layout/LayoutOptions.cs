@@ -6,6 +6,7 @@ namespace OneNoteMindMap.Core.Layout
         public string Theme { get; set; } = "Default";
         public string NodeShape { get; set; } = "Rounded";
         public string ConnectionStyle { get; set; } = "Curved";
+        public string EndpointStyle { get; set; } = "None";
         public double NodeWidth { get; set; } = 160;
         public double NodeHeight { get; set; } = 44;
         public double HorizontalGap { get; set; } = 90;

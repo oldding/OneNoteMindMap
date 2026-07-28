@@ -30,6 +30,7 @@ namespace OneNoteMindMap.Core.Serialization
             sb.AppendLine($"    \"theme\": \"{Esc(doc.Settings?.Theme)}\",");
             sb.AppendLine($"    \"nodeShape\": \"{Esc(doc.Settings?.NodeShape)}\",");
             sb.AppendLine($"    \"connectionStyle\": \"{Esc(doc.Settings?.ConnectionStyle ?? "Curved")}\",");
+            sb.AppendLine($"    \"endpointStyle\": \"{Esc(doc.Settings?.EndpointStyle ?? "None")}\",");
             sb.AppendLine($"    \"direction\": \"{Esc(doc.Settings?.Direction)}\",");
             sb.AppendLine($"    \"nodeWidth\": {(doc.Settings?.NodeWidth ?? 160).ToString(CultureInfo.InvariantCulture)},");
             sb.AppendLine($"    \"nodeHeight\": {(doc.Settings?.NodeHeight ?? 44).ToString(CultureInfo.InvariantCulture)},");
@@ -77,6 +78,7 @@ namespace OneNoteMindMap.Core.Serialization
                     if (set.TryGetValue("theme", out var thm)) doc.Settings.Theme = thm as string ?? "Default";
                     if (set.TryGetValue("nodeShape", out var shp)) doc.Settings.NodeShape = shp as string ?? "Rounded";
                     if (set.TryGetValue("connectionStyle", out var con)) doc.Settings.ConnectionStyle = con as string ?? "Curved";
+                    if (set.TryGetValue("endpointStyle", out var end)) doc.Settings.EndpointStyle = end as string ?? "None";
                     if (set.TryGetValue("direction", out var dir)) doc.Settings.Direction = dir as string ?? "Right";
                     if (set.TryGetValue("nodeWidth", out var nw)) doc.Settings.NodeWidth = ToDouble(nw);
                     if (set.TryGetValue("nodeHeight", out var nh)) doc.Settings.NodeHeight = ToDouble(nh);

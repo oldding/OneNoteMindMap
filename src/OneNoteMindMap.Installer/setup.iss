@@ -19,7 +19,7 @@
 #endif
 
 #define MyAppName "OneNote 脑图"
-#define MyAppVersion "1.4.1"
+#define MyAppVersion "1.4.2"
 #define MyAppPublisher "OneNoteMindMap"
 #define MyProgId "OneNoteMindMap.Connect"
 #define MyGuid "{{A4CEC0EF-4C6C-4CBD-9112-B83545EEADE8}"
@@ -77,13 +77,13 @@ Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\Implemented Categories\{{62C8FE65-4EB
 Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueData: "mscoree.dll"; Flags: uninsdeletekey
 Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "ThreadingModel"; ValueData: "Both"
 Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "Class"; ValueData: "OneNoteMindMap.AddIn.Connect"
-Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "Assembly"; ValueData: "OneNoteMindMap.AddIn, Version=1.4.1.0, Culture=neutral, PublicKeyToken=null"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "Assembly"; ValueData: "OneNoteMindMap.AddIn, Version=1.4.2.0, Culture=neutral, PublicKeyToken=null"
 Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "RuntimeVersion"; ValueData: "v4.0.30319"
 Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32"; ValueType: string; ValueName: "CodeBase"; ValueData: "{app}\OneNoteMindMap.AddIn.dll"
-Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.4.1.0"; ValueType: string; ValueName: "Class"; ValueData: "OneNoteMindMap.AddIn.Connect"
-Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.4.1.0"; ValueType: string; ValueName: "Assembly"; ValueData: "OneNoteMindMap.AddIn, Version=1.4.1.0, Culture=neutral, PublicKeyToken=null"
-Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.4.1.0"; ValueType: string; ValueName: "RuntimeVersion"; ValueData: "v4.0.30319"
-Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.4.1.0"; ValueType: string; ValueName: "CodeBase"; ValueData: "{app}\OneNoteMindMap.AddIn.dll"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.4.2.0"; ValueType: string; ValueName: "Class"; ValueData: "OneNoteMindMap.AddIn.Connect"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.4.2.0"; ValueType: string; ValueName: "Assembly"; ValueData: "OneNoteMindMap.AddIn, Version=1.4.2.0, Culture=neutral, PublicKeyToken=null"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.4.2.0"; ValueType: string; ValueName: "RuntimeVersion"; ValueData: "v4.0.30319"
+Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\InprocServer32\1.4.2.0"; ValueType: string; ValueName: "CodeBase"; ValueData: "{app}\OneNoteMindMap.AddIn.dll"
 Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\ProgId"; ValueType: string; ValueData: "{#MyProgId}"
 Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\Programmable"; ValueType: string; ValueData: ""
 Root: {#ComRoot}; Subkey: "CLSID\{#MyGuid}\VersionIndependentProgID"; ValueType: string; ValueData: "{#MyProgId}"

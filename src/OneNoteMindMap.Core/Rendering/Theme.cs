@@ -75,6 +75,31 @@ namespace OneNoteMindMap.Core.Rendering
             };
         }
     }
+
+    public static class ClassicMindMapStyle
+    {
+        private static readonly string[] BranchColors =
+        {
+            "#6C63FF", "#63B86B", "#5B9CF6", "#E05AC7",
+            "#F0A64A", "#35B8B0", "#E56B6F", "#8A6FD1"
+        };
+
+        public static string GetBranchColor(
+            OneNoteMindMap.Core.Model.MindMapNode root,
+            OneNoteMindMap.Core.Model.MindMapNode node)
+        {
+            if (root == null || node == null || root == node || root.Children.Count == 0)
+                return "#555555";
+
+            for (int i = 0; i < root.Children.Count; i++)
+            {
+                if (root.Children[i].FindById(node.Id) != null)
+                    return BranchColors[i % BranchColors.Length];
+            }
+
+            return BranchColors[0];
+        }
+    }
 }
 // Theme and ThemeManager are defined in SvgRenderer.cs
 // This file is intentionally left empty to avoid duplicate definitions.

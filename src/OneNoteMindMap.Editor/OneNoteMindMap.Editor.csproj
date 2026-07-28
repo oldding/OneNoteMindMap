@@ -58,6 +58,7 @@
     </Compile>
     <Compile Include="EditorStrings.cs" />
     <Compile Include="LinkGeometryBuilder.cs" />
+    <Compile Include="LinkEndpointBuilder.cs" />
     <Compile Include="PngExporter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
