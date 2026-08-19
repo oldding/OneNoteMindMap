@@ -36,7 +36,7 @@ namespace OneNoteMindMap.Features
                 if (string.IsNullOrEmpty(fileName)) return;
 
                 var engine = new MindMapLayoutEngine();
-                engine.Options.Layout = doc.Settings?.Layout ?? "RightTree";
+                engine.Options.ApplySettings(doc.Settings);
                 var layouts = engine.CalculateLayout(doc.Root);
                 string svgContent = SvgRenderer.Render(doc, layouts);
 

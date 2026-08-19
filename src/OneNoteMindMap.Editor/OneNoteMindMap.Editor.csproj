@@ -56,6 +56,12 @@
     <Compile Include="NodeControl.xaml.cs">
       <DependentUpon>NodeControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="NodePropertiesDialog.xaml.cs">
+      <DependentUpon>NodePropertiesDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="BatchFormatDialog.xaml.cs">
+      <DependentUpon>BatchFormatDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="EditorStrings.cs" />
     <Compile Include="LinkGeometryBuilder.cs" />
     <Compile Include="LinkEndpointBuilder.cs" />
@@ -68,6 +74,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="NodeControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="NodePropertiesDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="BatchFormatDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

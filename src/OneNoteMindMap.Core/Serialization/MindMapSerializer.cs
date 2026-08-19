@@ -32,8 +32,11 @@ namespace OneNoteMindMap.Core.Serialization
             sb.AppendLine($"    \"connectionStyle\": \"{Esc(doc.Settings?.ConnectionStyle ?? "Curved")}\",");
             sb.AppendLine($"    \"endpointStyle\": \"{Esc(doc.Settings?.EndpointStyle ?? "None")}\",");
             sb.AppendLine($"    \"direction\": \"{Esc(doc.Settings?.Direction)}\",");
+            sb.AppendLine($"    \"canvasZoom\": {(doc.Settings?.CanvasZoom ?? 1.0).ToString(CultureInfo.InvariantCulture)},");
+            sb.AppendLine($"    \"nodeSizeMode\": \"{Esc(doc.Settings?.NodeSizeMode ?? "Fixed")}\",");
             sb.AppendLine($"    \"nodeWidth\": {(doc.Settings?.NodeWidth ?? 160).ToString(CultureInfo.InvariantCulture)},");
             sb.AppendLine($"    \"nodeHeight\": {(doc.Settings?.NodeHeight ?? 44).ToString(CultureInfo.InvariantCulture)},");
+            sb.AppendLine($"    \"autoNodeMaxWidth\": {(doc.Settings?.AutoNodeMaxWidth ?? 320).ToString(CultureInfo.InvariantCulture)},");
             sb.AppendLine($"    \"horizontalGap\": {(doc.Settings?.HorizontalGap ?? 90).ToString(CultureInfo.InvariantCulture)},");
             sb.AppendLine($"    \"verticalGap\": {(doc.Settings?.VerticalGap ?? 24).ToString(CultureInfo.InvariantCulture)},");
             sb.AppendLine($"    \"levelGap\": {(doc.Settings?.LevelGap ?? 110).ToString(CultureInfo.InvariantCulture)}");
@@ -80,8 +83,11 @@ namespace OneNoteMindMap.Core.Serialization
                     if (set.TryGetValue("connectionStyle", out var con)) doc.Settings.ConnectionStyle = con as string ?? "Curved";
                     if (set.TryGetValue("endpointStyle", out var end)) doc.Settings.EndpointStyle = end as string ?? "None";
                     if (set.TryGetValue("direction", out var dir)) doc.Settings.Direction = dir as string ?? "Right";
+                    if (set.TryGetValue("canvasZoom", out var zoom)) doc.Settings.CanvasZoom = ToDouble(zoom);
+                    if (set.TryGetValue("nodeSizeMode", out var sizeMode)) doc.Settings.NodeSizeMode = sizeMode as string ?? "Fixed";
                     if (set.TryGetValue("nodeWidth", out var nw)) doc.Settings.NodeWidth = ToDouble(nw);
                     if (set.TryGetValue("nodeHeight", out var nh)) doc.Settings.NodeHeight = ToDouble(nh);
+                    if (set.TryGetValue("autoNodeMaxWidth", out var maxWidth)) doc.Settings.AutoNodeMaxWidth = ToDouble(maxWidth);
                     if (set.TryGetValue("horizontalGap", out var hg)) doc.Settings.HorizontalGap = ToDouble(hg);
                     if (set.TryGetValue("verticalGap", out var vg)) doc.Settings.VerticalGap = ToDouble(vg);
                     if (set.TryGetValue("levelGap", out var lg)) doc.Settings.LevelGap = ToDouble(lg);

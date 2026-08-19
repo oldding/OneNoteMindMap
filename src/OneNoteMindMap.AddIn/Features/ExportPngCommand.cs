@@ -2,8 +2,6 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using OneNoteMindMap.Core.Layout;
-using OneNoteMindMap.Core.Rendering;
 using OneNoteMindMap.Logging;
 using OneNoteMindMap.OneNote;
 using OneNoteMindMap.UI;
@@ -37,13 +35,9 @@ namespace OneNoteMindMap.Features
 
                 if (string.IsNullOrEmpty(fileName)) return;
 
-                var engine = new MindMapLayoutEngine();
-                engine.Options.Layout = doc.Settings?.Layout ?? "RightTree";
-                var layouts = engine.CalculateLayout(doc.Root);
-                string svgContent = SvgRenderer.Render(doc, layouts);
-
-                // Convert SVG to PNG using our simple renderer
-                var pngBytes = SvgToPngConverter.ConvertSvgToPng(svgContent, 2.0);
+                // Use the same WPF renderer as the editor and OneNote preview so
+                // dynamic node sizes, multiline text, and connectors stay identical.
+                var pngBytes = OneNoteMindMap.Editor.PngExporter.Export(doc, 2.0);
                 if (pngBytes == null || pngBytes.Length == 0)
                 {
                     Msg.Warn(Strings.If("生成图片失败", "Failed to generate image"));

@@ -26,6 +26,7 @@
                      Text=""
                      AcceptsReturn="False"
                      TextWrapping="NoWrap"
+                     VerticalScrollBarVisibility="Auto"
                      BorderThickness="1"
                      BorderBrush="#0078D4"
                      VerticalAlignment="Center"

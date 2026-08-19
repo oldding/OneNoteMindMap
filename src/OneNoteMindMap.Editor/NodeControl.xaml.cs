@@ -16,6 +16,7 @@ namespace OneNoteMindMap.Editor
         public LayoutOptions Options { get; }
 
         public event EventHandler RequestEdit;
+        public event EventHandler ContentChanging;
         public event EventHandler ContentChanged;
         public bool IsEditing => EditBox.Visibility == Visibility.Visible;
 
@@ -29,6 +30,7 @@ namespace OneNoteMindMap.Editor
             new SolidColorBrush(Colors.White);
         private readonly SolidColorBrush _classicBranchBrush;
         private readonly bool _isClassicMindMap;
+        private readonly bool _isAutoFit;
         private bool _isSelected;
         private bool _isDropTarget;
 
@@ -63,10 +65,22 @@ namespace OneNoteMindMap.Editor
             Layout = layout;
             Options = options;
             _isClassicMindMap = options.ConnectionStyle == "ClassicMindMap";
-            _classicBranchBrush = new SolidColorBrush(
-                (Color)ColorConverter.ConvertFromString(branchColor));
+            _isAutoFit = string.Equals(options.NodeSizeMode, "AutoFit", StringComparison.OrdinalIgnoreCase);
+            _classicBranchBrush = CreateBrush(
+                string.IsNullOrWhiteSpace(node.Color) ? branchColor : node.Color,
+                branchColor);
 
-            TextBlock.Text = ToSingleLine(node.Text);
+            TextBlock.Text = GetDisplayText(node);
+            ToolTip = BuildToolTip(node);
+            TextBlock.TextWrapping = _isAutoFit ? TextWrapping.Wrap : TextWrapping.NoWrap;
+            TextBlock.TextTrimming = _isAutoFit ? TextTrimming.None : TextTrimming.CharacterEllipsis;
+            if (_isAutoFit)
+            {
+                TextBlock.HorizontalAlignment = HorizontalAlignment.Stretch;
+                TextBlock.TextAlignment = TextAlignment.Center;
+            }
+            EditBox.AcceptsReturn = _isAutoFit;
+            EditBox.TextWrapping = _isAutoFit ? TextWrapping.Wrap : TextWrapping.NoWrap;
             ApplyStyle();
 
             if (_isClassicMindMap)
@@ -85,14 +99,11 @@ namespace OneNoteMindMap.Editor
             else if (layout.Depth == 0)
             {
                 TextBlock.Foreground = RootTextBrush;
-                NodeBorder.Height = 50;
                 TextBlock.FontSize = 15;
             }
 
-            this.Width = options.NodeWidth;
-            this.Height = _isClassicMindMap
-                ? options.NodeHeight
-                : layout.Depth == 0 ? 50 : options.NodeHeight;
+            this.Width = layout.Width;
+            this.Height = layout.Height;
         }
 
         private void ApplyStyle()
@@ -110,18 +121,19 @@ namespace OneNoteMindMap.Editor
                     : new Thickness(0, 0, 0, 2);
                 NodeBorder.CornerRadius = new CornerRadius(0);
                 NodeBorder.Padding = new Thickness(4, 2, 4, 0);
-                TextBlock.Foreground = new SolidColorBrush(
-                    (Color)ColorConverter.ConvertFromString(theme.NodeText));
+                TextBlock.Foreground = Layout.Depth == 0
+                    ? CreateBrush(Node.Color, theme.NodeText)
+                    : new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.NodeText));
                 return;
             }
 
-            string fill = Layout.Depth == 0
+            string fallbackFill = Layout.Depth == 0
                 ? theme.RootFill
                 : Layout.Depth == 1 ? theme.Level1Fill
                 : Layout.Depth == 2 ? theme.Level2Fill
                 : theme.NodeFill;
 
-            NodeBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(fill));
+            NodeBorder.Background = CreateBrush(Node.Color, fallbackFill);
             NodeBorder.BorderBrush = DefaultBorderBrush;
             TextBlock.Foreground = Layout.Depth == 0
                 ? new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.RootText))
@@ -179,8 +191,10 @@ namespace OneNoteMindMap.Editor
             bool changed = !string.IsNullOrEmpty(newText) && newText != Node.Text;
             if (!string.IsNullOrEmpty(newText))
             {
+                if (changed)
+                    ContentChanging?.Invoke(this, EventArgs.Empty);
                 Node.Text = newText;
-                TextBlock.Text = ToSingleLine(newText);
+                TextBlock.Text = GetDisplayText(Node);
             }
             TextBlock.Visibility = Visibility.Visible;
             EditBox.Visibility = Visibility.Collapsed;
@@ -211,6 +225,8 @@ namespace OneNoteMindMap.Editor
         {
             if (e.Key == Key.Enter)
             {
+                if (_isAutoFit && (Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                    return;
                 ExitEditMode();
                 e.Handled = true;
             }
@@ -227,6 +243,37 @@ namespace OneNoteMindMap.Editor
             return (text ?? "")
                 .Replace("\r", " ")
                 .Replace("\n", " ");
+        }
+
+        private string GetDisplayText(MindMapNode node)
+        {
+            string text = NodeTextLayout.GetDisplayText(node);
+            return _isAutoFit ? text : ToSingleLine(text);
+        }
+
+        private static string BuildToolTip(MindMapNode node)
+        {
+            if (node == null)
+                return null;
+
+            string note = node.Note?.Trim();
+            string link = node.Link?.Trim();
+            if (string.IsNullOrEmpty(note)) return string.IsNullOrEmpty(link) ? null : link;
+            if (string.IsNullOrEmpty(link)) return note;
+            return note + Environment.NewLine + link;
+        }
+
+        private static SolidColorBrush CreateBrush(string value, string fallback)
+        {
+            try
+            {
+                string color = string.IsNullOrWhiteSpace(value) ? fallback : value;
+                return new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
+            }
+            catch (Exception)
+            {
+                return new SolidColorBrush((Color)ColorConverter.ConvertFromString(fallback));
+            }
         }
     }
 }

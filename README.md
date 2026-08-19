@@ -9,6 +9,7 @@
 ### From Page to Mind Map
 - **Generate from Page** — Parse OneNote page outline hierarchy into a mind map tree
 - **Edit Mind Map** — Open the WPF editor to drag, add, delete, and edit nodes
+- **Safe Editing** — Undo/redo changes, edit new nodes immediately, and recover accidental deletions
 - **Save** — Store mind map data back to the page as hidden Meta (not visible text)
 
 ### From Mind Map to Page
@@ -19,9 +20,14 @@
 - **Three layouts**: RightTree, BothSides, OrgChart
 - **Five themes**: Default, Purple, Minimal, Fresh, Warm
 - **Three node shapes**: Rounded, Rectangle, Pill
-- **Three connection styles**: Curved, Straight, Orthogonal
+- **Two node sizing modes**: Fixed for compact maps; Fit Content wraps and displays text in full
+- **Four connection styles**: Curved, Straight, Orthogonal, Classic Mind Map
 - **Lightweight tables**: OneNote tables are converted to compact text nodes
 - **Export**: Save as PNG or SVG
+- **View controls**: Fit to window, reset to 100%, and Ctrl + mouse-wheel zoom
+- **Node properties**: Notes, links, custom colors, and emoji icons
+- **Efficient editing**: Node search, arrow-key navigation, and hierarchy-aware copy/paste
+- **Batch operations**: Ctrl+click multi-select, batch colors/icons, and Alt+Up/Down sibling reordering
 
 ### Ribbon Buttons (8 total)
 

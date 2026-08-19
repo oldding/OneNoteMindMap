@@ -11,10 +11,16 @@ namespace OneNoteMindMap.Core.Layout
 
         private const double OrgChartLevelGap = 70;
         private const double OrgChartSiblingGap = 28;
+        private readonly Dictionary<string, NodeSize> _nodeSizes = new Dictionary<string, NodeSize>();
+        private string _rootNodeId;
 
         public List<NodeLayout> CalculateLayout(MindMapNode root)
         {
             var layouts = new List<NodeLayout>();
+            _nodeSizes.Clear();
+            _rootNodeId = root?.Id;
+            if (root == null)
+                return layouts;
             switch (Options.Layout)
             {
                 case "BothSides":
@@ -44,14 +50,25 @@ namespace OneNoteMindMap.Core.Layout
 
         private double CalculateSubtreeHeight(MindMapNode node)
         {
+            double nodeHeight = GetNodeSize(node).Height;
             if (node.Collapsed || node.Children.Count == 0)
-                return Options.NodeHeight;
+                return nodeHeight;
 
             double total = 0;
             for (int i = 0; i < node.Children.Count; i++)
                 total += CalculateSubtreeHeight(node.Children[i]);
             total += (node.Children.Count - 1) * Options.VerticalGap;
-            return Math.Max(total, Options.NodeHeight);
+            return Math.Max(total, nodeHeight);
+        }
+
+        private NodeSize GetNodeSize(MindMapNode node)
+        {
+            if (!_nodeSizes.TryGetValue(node.Id, out var size))
+            {
+                size = NodeTextLayout.Measure(node, Options, node.Id == _rootNodeId);
+                _nodeSizes[node.Id] = size;
+            }
+            return size;
         }
 
         private int GetDepth(MindMapNode parent, List<NodeLayout> layouts)
@@ -63,22 +80,23 @@ namespace OneNoteMindMap.Core.Layout
 
         private void LayoutRightTree(MindMapNode node, MindMapNode parent, double x, double y, List<NodeLayout> layouts)
         {
+            var nodeSize = GetNodeSize(node);
             double subtreeHeight = CalculateSubtreeHeight(node);
-            double nodeY = y + (subtreeHeight - Options.NodeHeight) / 2;
+            double nodeY = y + (subtreeHeight - nodeSize.Height) / 2;
 
             layouts.Add(new NodeLayout
             {
                 NodeId = node.Id,
                 X = x,
                 Y = nodeY,
-                Width = Options.NodeWidth,
-                Height = Options.NodeHeight,
+                Width = nodeSize.Width,
+                Height = nodeSize.Height,
                 Depth = GetDepth(parent, layouts)
             });
 
             if (!node.Collapsed && node.Children.Count > 0)
             {
-                double childX = x + Options.NodeWidth + Options.LevelGap;
+                double childX = x + nodeSize.Width + Options.LevelGap;
                 double childY = y;
 
                 for (int i = 0; i < node.Children.Count; i++)
@@ -93,28 +111,29 @@ namespace OneNoteMindMap.Core.Layout
 
         private void LayoutLeftTree(MindMapNode node, MindMapNode parent, double x, double y, List<NodeLayout> layouts)
         {
+            var nodeSize = GetNodeSize(node);
             double subtreeHeight = CalculateSubtreeHeight(node);
-            double nodeY = y + (subtreeHeight - Options.NodeHeight) / 2;
+            double nodeY = y + (subtreeHeight - nodeSize.Height) / 2;
 
             layouts.Add(new NodeLayout
             {
                 NodeId = node.Id,
                 X = x,
                 Y = nodeY,
-                Width = Options.NodeWidth,
-                Height = Options.NodeHeight,
+                Width = nodeSize.Width,
+                Height = nodeSize.Height,
                 Depth = GetDepth(parent, layouts)
             });
 
             if (!node.Collapsed && node.Children.Count > 0)
             {
-                double childX = x - Options.NodeWidth - Options.LevelGap;
                 double childY = y;
 
                 for (int i = 0; i < node.Children.Count; i++)
                 {
                     var child = node.Children[i];
                     double childSubtreeHeight = CalculateSubtreeHeight(child);
+                    double childX = x - GetNodeSize(child).Width - Options.LevelGap;
                     LayoutLeftTree(child, node, childX, childY, layouts);
                     childY += childSubtreeHeight + Options.VerticalGap;
                 }
@@ -123,6 +142,7 @@ namespace OneNoteMindMap.Core.Layout
 
         private void LayoutBothSides(MindMapNode root, List<NodeLayout> layouts)
         {
+            var rootSize = GetNodeSize(root);
             var children = root.Collapsed
                 ? new List<MindMapNode>()
                 : root.Children;
@@ -133,19 +153,19 @@ namespace OneNoteMindMap.Core.Layout
 
             double rightHeight = ColumnHeight(rightChildren);
             double leftHeight = ColumnHeight(leftChildren);
-            double total = Math.Max(Options.NodeHeight, Math.Max(rightHeight, leftHeight));
+            double total = Math.Max(rootSize.Height, Math.Max(rightHeight, leftHeight));
 
             layouts.Add(new NodeLayout
             {
                 NodeId = root.Id,
                 X = 0,
-                Y = (total - Options.NodeHeight) / 2,
-                Width = Options.NodeWidth,
-                Height = Options.NodeHeight,
+                Y = (total - rootSize.Height) / 2,
+                Width = rootSize.Width,
+                Height = rootSize.Height,
                 Depth = 0
             });
 
-            double rightX = Options.NodeWidth + Options.LevelGap;
+            double rightX = rootSize.Width + Options.LevelGap;
             double y = (total - rightHeight) / 2;
             foreach (var child in rightChildren)
             {
@@ -154,11 +174,11 @@ namespace OneNoteMindMap.Core.Layout
                 y += h + Options.VerticalGap;
             }
 
-            double leftX = -(Options.NodeWidth + Options.LevelGap);
             y = (total - leftHeight) / 2;
             foreach (var child in leftChildren)
             {
                 double h = CalculateSubtreeHeight(child);
+                double leftX = -GetNodeSize(child).Width - Options.LevelGap;
                 LayoutLeftTree(child, root, leftX, y, layouts);
                 y += h + Options.VerticalGap;
             }
@@ -176,34 +196,36 @@ namespace OneNoteMindMap.Core.Layout
 
         private double CalculateSubtreeWidth(MindMapNode node)
         {
+            double nodeWidth = GetNodeSize(node).Width;
             if (node.Collapsed || node.Children.Count == 0)
-                return Options.NodeWidth;
+                return nodeWidth;
 
             double total = 0;
             for (int i = 0; i < node.Children.Count; i++)
                 total += CalculateSubtreeWidth(node.Children[i]);
             total += (node.Children.Count - 1) * OrgChartSiblingGap;
-            return Math.Max(total, Options.NodeWidth);
+            return Math.Max(total, nodeWidth);
         }
 
         private void LayoutOrgChart(MindMapNode node, MindMapNode parent, double x, double y, List<NodeLayout> layouts)
         {
+            var nodeSize = GetNodeSize(node);
             double subtreeWidth = CalculateSubtreeWidth(node);
-            double nodeX = x + (subtreeWidth - Options.NodeWidth) / 2;
+            double nodeX = x + (subtreeWidth - nodeSize.Width) / 2;
 
             layouts.Add(new NodeLayout
             {
                 NodeId = node.Id,
                 X = nodeX,
                 Y = y,
-                Width = Options.NodeWidth,
-                Height = Options.NodeHeight,
+                Width = nodeSize.Width,
+                Height = nodeSize.Height,
                 Depth = GetDepth(parent, layouts)
             });
 
             if (!node.Collapsed && node.Children.Count > 0)
             {
-                double childY = y + Options.NodeHeight + OrgChartLevelGap;
+                double childY = y + nodeSize.Height + OrgChartLevelGap;
                 double childX = x;
 
                 for (int i = 0; i < node.Children.Count; i++)

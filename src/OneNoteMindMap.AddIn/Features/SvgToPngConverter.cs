@@ -88,21 +88,36 @@ namespace OneNoteMindMap.Features
 
             foreach (var text in doc.Descendants(ns + "text"))
             {
-                float x = (float)(double.Parse((string)text.Attribute("x") ?? "0") * scale);
-                float y = (float)(double.Parse((string)text.Attribute("y") ?? "0") * scale);
-                string content = text.Value;
                 float fontSize = (float)(double.Parse((string)text.Attribute("font-size") ?? "12") * scale);
                 string fill = (string)text.Attribute("fill") ?? "#333333";
+                string anchor = (string)text.Attribute("text-anchor") ?? "middle";
 
                 using (var brush = new SolidBrush(ColorTranslator.FromHtml(fill)))
                 using (var font = new Font("Microsoft YaHei", fontSize * 72f / 96f, GraphicsUnit.Pixel))
                 {
-                    var format = new StringFormat
+                    var format = new StringFormat(StringFormat.GenericTypographic)
                     {
-                        Alignment = StringAlignment.Center,
-                        LineAlignment = StringAlignment.Center
+                        Alignment = anchor == "start" ? StringAlignment.Near :
+                            anchor == "end" ? StringAlignment.Far : StringAlignment.Center,
+                        LineAlignment = StringAlignment.Near
                     };
-                    g.DrawString(content, font, brush, x, y, format);
+
+                    var spans = text.Elements(ns + "tspan").ToList();
+                    if (spans.Count > 0)
+                    {
+                        foreach (var span in spans)
+                        {
+                            float x = (float)(double.Parse((string)span.Attribute("x") ?? "0") * scale);
+                            float baseline = (float)(double.Parse((string)span.Attribute("y") ?? "0") * scale);
+                            g.DrawString(span.Value, font, brush, x, baseline - fontSize * 0.86f, format);
+                        }
+                    }
+                    else
+                    {
+                        float x = (float)(double.Parse((string)text.Attribute("x") ?? "0") * scale);
+                        float y = (float)(double.Parse((string)text.Attribute("y") ?? "0") * scale);
+                        g.DrawString(text.Value, font, brush, x, y - fontSize * 0.5f, format);
+                    }
                 }
             }
 
