@@ -61,8 +61,8 @@
 ## 安装
 
 1. 从 [Releases](https://github.com/oldding/OneNoteMindMap/releases) 下载安装程序
-   - 64 位 OneNote 选择 `OneNoteMindMapSetup-1.5.0-x64.exe`
-   - 32 位 OneNote 选择 `OneNoteMindMapSetup-1.5.0-x86.exe`
+   - 64 位 OneNote 选择 `OneNoteMindMapSetup-1.5.1-x64.exe`
+   - 32 位 OneNote 选择 `OneNoteMindMapSetup-1.5.1-x86.exe`
 2. 运行安装程序（需要管理员权限）
 3. 重启 OneNote
 4. 在功能区可以看到新的 **脑图** 选项卡

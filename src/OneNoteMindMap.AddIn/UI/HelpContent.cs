@@ -53,7 +53,7 @@ namespace OneNoteMindMap.UI
         private static string GetAboutZh()
         {
             return "<h1>OneNote 脑图 — 使用帮助</h1>"
-                + "<p class='version'>版本：1.5.0</p>"
+                + "<p class='version'>版本：1.5.1</p>"
                 + "<p>本插件由 OneNote MVP 开发。</p>"
                 + "<h2>按钮一览</h2>"
                 + "<table>"
@@ -296,7 +296,7 @@ namespace OneNoteMindMap.UI
         private static string GetAboutEn()
         {
             return "<h1>OneNote Mind Map — Help</h1>"
-                + "<p class='version'>Version: 1.5.0</p>"
+                + "<p class='version'>Version: 1.5.1</p>"
                 + "<p>This plugin is developed by a OneNote MVP.</p>"
                 + "<h2>Button Reference</h2>"
                 + "<table>"

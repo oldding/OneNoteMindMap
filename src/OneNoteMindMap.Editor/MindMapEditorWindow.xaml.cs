@@ -256,7 +256,10 @@ namespace OneNoteMindMap.Editor
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    SaveMindMap();
+                    // The window is already in its closing lifecycle here. Prepare the
+                    // document for persistence, but do not call Close() a second time.
+                    if (!TryPrepareSave())
+                        e.Cancel = true;
                 }
                 else if (result == MessageBoxResult.Cancel)
                 {
@@ -1514,10 +1517,11 @@ namespace OneNoteMindMap.Editor
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            SaveMindMap();
+            if (TryPrepareSave())
+                Close();
         }
 
-        private void SaveMindMap()
+        private bool TryPrepareSave()
         {
             try
             {
@@ -1526,12 +1530,15 @@ namespace OneNoteMindMap.Editor
                 ApplyToolbarSettings(_document.Settings);
 
                 IsSaved = true;
+                _isDirty = false;
                 StatusText.Text = EditorStrings.SavedToOneNote;
-                Close();
+                return true;
             }
             catch (Exception ex)
             {
+                IsSaved = false;
                 MessageBox.Show(EditorStrings.SaveFailed + ": " + ex.Message, EditorStrings.UnsavedTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
             }
         }
 
