@@ -8,4 +8,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright © 2026 OneNoteMindMap Contributors")]
 [assembly: ComVisible(false)]
 [assembly: AssemblyVersion("1.5.1.0")]
-[assembly: AssemblyFileVersion("1.5.1.0")]
+[assembly: AssemblyFileVersion("1.5.2.0")]

@@ -21,7 +21,9 @@ namespace OneNoteMindMap.UI
         {
             using (var form = new HelpForm())
             {
-                if (owner == null) form.ShowDialog(); else form.ShowDialog(owner);
+                var untrack = UiThread.TrackWindow(form.Dispose);
+                try { if (owner == null) form.ShowDialog(); else form.ShowDialog(owner); }
+                finally { untrack(); }
             }
         }
 

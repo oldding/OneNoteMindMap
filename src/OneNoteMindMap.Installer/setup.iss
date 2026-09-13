@@ -6,20 +6,20 @@
   #define InstallerSuffix "x86"
   #define InstallerDefaultDir "{autopf32}\OneNoteMindMap"
   #define InstallerArchitectures "x86compatible"
-  #define ComRoot "HKCR32"
+  #define ComRoot "HKCR"
   #define RegAsmPath "{dotnet40}\RegAsm.exe"
   #define ComRegistrationMessage "正在注册 32 位 COM 组件..."
 #else
   #define InstallerSuffix "x64"
   #define InstallerDefaultDir "{autopf64}\OneNoteMindMap"
   #define InstallerArchitectures "x64compatible"
-  #define ComRoot "HKCR64"
+  #define ComRoot "HKCR"
   #define RegAsmPath "{dotnet4064}\RegAsm.exe"
   #define ComRegistrationMessage "正在注册 64 位 COM 组件..."
 #endif
 
 #define MyAppName "OneNote 脑图"
-#define MyAppVersion "1.5.1"
+#define MyAppVersion "1.5.2"
 #define MyAppPublisher "OneNoteMindMap"
 #define MyProgId "OneNoteMindMap.Connect"
 #define MyGuid "{{A4CEC0EF-4C6C-4CBD-9112-B83545EEADE8}"

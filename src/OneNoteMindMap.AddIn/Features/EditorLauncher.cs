@@ -24,9 +24,11 @@ namespace OneNoteMindMap.Features
                     try
                     {
                         var editor = new OneNoteMindMap.Editor.MindMapEditorWindow(doc, pageId);
-                        editor.ShowDialog();
+                        var untrack = UiThread.TrackWindow(editor.CloseForHostShutdown);
+                        try { editor.ShowDialog(); }
+                        finally { untrack(); }
 
-                        if (editor.IsSaved)
+                        if (editor.IsSaved && !UiThread.IsStopping)
                         {
                             if (MindMapPageStore.SaveMindMapToPage(pageId, editor.Document))
                             {

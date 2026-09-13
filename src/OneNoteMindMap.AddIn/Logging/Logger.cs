@@ -37,7 +37,7 @@ namespace OneNoteMindMap.Logging
             if (_logPath == null) return;
             try
             {
-                string line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] {message}";
+                string line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] [pid={System.Diagnostics.Process.GetCurrentProcess().Id}] {message}";
                 lock (_lock)
                 {
                     System.IO.File.AppendAllText(_logPath, line + Environment.NewLine);

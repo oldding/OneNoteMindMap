@@ -244,6 +244,19 @@ namespace OneNoteMindMap.Editor
             }
         }
 
+        // OneNote is already shutting down: preserve open edits locally, never call COM.
+        public void CloseForHostShutdown()
+        {
+            var folder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "OneNoteMindMap", "recovery");
+            System.IO.Directory.CreateDirectory(folder);
+            var path = System.IO.Path.Combine(folder, DateTime.Now.ToString("yyyyMMdd-HHmmss-fff") + "-" + Guid.NewGuid().ToString("N") + ".json");
+            System.IO.File.WriteAllText(path, OneNoteMindMap.Core.Serialization.MindMapSerializer.Serialize(Document), System.Text.Encoding.UTF8);
+            Closing -= MindMapEditorWindow_Closing;
+            IsSaved = false;
+            Close();
+        }
+
         private void MindMapEditorWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (_isDirty && !IsSaved)
