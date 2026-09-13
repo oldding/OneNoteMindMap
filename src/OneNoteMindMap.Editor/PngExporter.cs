@@ -21,8 +21,12 @@ namespace OneNoteMindMap.Editor
             engine.Options.NodeShape = doc.Settings?.NodeShape ?? "Rounded";
             engine.Options.ConnectionStyle = doc.Settings?.ConnectionStyle ?? "Curved";
             engine.Options.EndpointStyle = doc.Settings?.EndpointStyle ?? "None";
+            engine.Options.NodeSizeMode = doc.Settings?.NodeSizeMode ?? "Fixed";
             engine.Options.NodeWidth = doc.Settings?.NodeWidth ?? 160;
             engine.Options.NodeHeight = doc.Settings?.NodeHeight ?? 44;
+            engine.Options.AutoNodeMaxWidth = doc.Settings?.AutoNodeMaxWidth > 0
+                ? doc.Settings.AutoNodeMaxWidth
+                : 320;
             engine.Options.HorizontalGap = doc.Settings?.HorizontalGap ?? 90;
             engine.Options.VerticalGap = doc.Settings?.VerticalGap ?? 24;
             engine.Options.LevelGap = doc.Settings?.LevelGap ?? 110;
@@ -52,8 +56,11 @@ namespace OneNoteMindMap.Editor
                 var parentLayout = layouts.FirstOrDefault(l => l.NodeId == parentNode.Id);
                 if (parentLayout == null) continue;
 
+                var lineNode = doc.Root.FindById(layout.NodeId);
                 string lineColor = engine.Options.ConnectionStyle == "ClassicMindMap"
-                    ? ClassicMindMapStyle.GetBranchColor(doc.Root, doc.Root.FindById(layout.NodeId))
+                    ? string.IsNullOrWhiteSpace(lineNode?.Color)
+                        ? ClassicMindMapStyle.GetBranchColor(doc.Root, lineNode)
+                        : lineNode.Color
                     : "#AAAAAA";
                 var lineBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(lineColor));
                 canvas.Children.Add(new System.Windows.Shapes.Path

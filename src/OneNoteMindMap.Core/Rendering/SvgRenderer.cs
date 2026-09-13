@@ -28,6 +28,7 @@ namespace OneNoteMindMap.Core.Rendering
             string connectionStyle = doc.Settings?.ConnectionStyle ?? "Curved";
             string endpointStyle = doc.Settings?.EndpointStyle ?? "None";
             bool isClassicMindMap = connectionStyle == "ClassicMindMap";
+            bool autoFit = string.Equals(doc.Settings?.NodeSizeMode, "AutoFit", StringComparison.OrdinalIgnoreCase);
 
             var sb = new StringBuilder();
             sb.AppendLine($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
@@ -45,12 +46,14 @@ namespace OneNoteMindMap.Core.Rendering
                 double y = layout.Y + offsetY;
                 double rx = 6;
                 double ry = 6;
-                string displayText = TruncateText(node.Text);
+                string displayText = NodeTextLayout.GetDisplayText(node);
                 if (isClassicMindMap)
                 {
                     if (layout.Depth > 0)
                     {
-                        string branchColor = ClassicMindMapStyle.GetBranchColor(doc.Root, node);
+                        string branchColor = string.IsNullOrWhiteSpace(node.Color)
+                            ? ClassicMindMapStyle.GetBranchColor(doc.Root, node)
+                            : node.Color;
                         sb.AppendLine($"<path d=\"M{x:F1},{y + layout.Height:F1} L{x + layout.Width:F1},{y + layout.Height:F1}\" fill=\"none\" stroke=\"{branchColor}\" stroke-width=\"2\"/>");
                     }
 
@@ -58,7 +61,16 @@ namespace OneNoteMindMap.Core.Rendering
                     string weight = layout.Depth <= 1 ? "600" : "400";
                     string anchor = layout.Depth == 0 ? "middle" : "start";
                     double textX = layout.Depth == 0 ? x + layout.Width / 2 : x + 4;
-                    sb.AppendLine($"<text x=\"{textX:F1}\" y=\"{y + layout.Height - 7:F1}\" text-anchor=\"{anchor}\" font-family=\"{theme.FontFamily}\" font-size=\"{classicFontSize}\" font-weight=\"{weight}\" fill=\"{theme.NodeText}\">{EscapeXml(displayText)}</text>");
+                    var lines = autoFit
+                        ? NodeTextLayout.WrapText(displayText, layout.Width - 16, classicFontSize)
+                        : new List<string> { TruncateText(displayText) };
+                    double lineHeight = classicFontSize * 1.45;
+                    double firstBaseline = y + layout.Height - 7 - (lines.Count - 1) * lineHeight;
+                    string classicTextColor = layout.Depth == 0 && !string.IsNullOrWhiteSpace(node.Color)
+                        ? node.Color
+                        : theme.NodeText;
+                    AppendText(sb, lines, textX, firstBaseline, lineHeight, anchor,
+                        theme.FontFamily, classicFontSize, weight, classicTextColor);
                 }
                 else
                 {
@@ -66,7 +78,14 @@ namespace OneNoteMindMap.Core.Rendering
                     string textColor = layout.Depth == 0 ? theme.RootText : theme.NodeText;
                     double fontSize = layout.Depth == 0 ? 15 : 13;
                     sb.AppendLine($"<rect x=\"{x:F1}\" y=\"{y:F1}\" width=\"{layout.Width:F1}\" height=\"{layout.Height:F1}\" rx=\"{rx:F1}\" ry=\"{ry:F1}\" fill=\"{fill}\" stroke=\"{theme.Border}\" stroke-width=\"1\"/>");
-                    sb.AppendLine($"<text x=\"{x + layout.Width / 2:F1}\" y=\"{y + layout.Height / 2:F1}\" text-anchor=\"middle\" dominant-baseline=\"central\" font-family=\"{theme.FontFamily}\" font-size=\"{fontSize}\" fill=\"{textColor}\">{EscapeXml(displayText)}</text>");
+                    var lines = autoFit
+                        ? NodeTextLayout.WrapText(displayText, layout.Width - 24, fontSize)
+                        : new List<string> { TruncateText(displayText) };
+                    double lineHeight = fontSize * 1.45;
+                    double textBlockHeight = fontSize + (lines.Count - 1) * lineHeight;
+                    double firstBaseline = y + (layout.Height - textBlockHeight) / 2 + fontSize * 0.85;
+                    AppendText(sb, lines, x + layout.Width / 2, firstBaseline, lineHeight,
+                        "middle", theme.FontFamily, fontSize, "400", textColor);
                 }
             }
 
@@ -84,8 +103,11 @@ namespace OneNoteMindMap.Core.Rendering
                 double y1 = anchors.StartY + offsetY;
                 double x2 = anchors.EndX + offsetX;
                 double y2 = anchors.EndY + offsetY;
+                var lineNode = doc.Root.FindById(layout.NodeId);
                 string lineColor = isClassicMindMap
-                    ? ClassicMindMapStyle.GetBranchColor(doc.Root, doc.Root.FindById(layout.NodeId))
+                    ? string.IsNullOrWhiteSpace(lineNode?.Color)
+                        ? ClassicMindMapStyle.GetBranchColor(doc.Root, lineNode)
+                        : lineNode.Color
                     : theme.Line;
 
                 if (connectionStyle == "Orthogonal")
@@ -220,6 +242,27 @@ namespace OneNoteMindMap.Core.Rendering
                 .Trim();
             if (singleLine.Length <= 20) return singleLine;
             return singleLine.Substring(0, 17) + "...";
+        }
+
+        private static void AppendText(
+            StringBuilder sb,
+            List<string> lines,
+            double x,
+            double firstBaseline,
+            double lineHeight,
+            string anchor,
+            string fontFamily,
+            double fontSize,
+            string fontWeight,
+            string color)
+        {
+            sb.Append($"<text text-anchor=\"{anchor}\" font-family=\"{fontFamily}\" font-size=\"{fontSize:F1}\" font-weight=\"{fontWeight}\" fill=\"{color}\">");
+            for (int i = 0; i < lines.Count; i++)
+            {
+                double baseline = firstBaseline + i * lineHeight;
+                sb.Append($"<tspan x=\"{x:F1}\" y=\"{baseline:F1}\">{EscapeXml(lines[i])}</tspan>");
+            }
+            sb.AppendLine("</text>");
         }
 
         private static string EscapeXml(string s)

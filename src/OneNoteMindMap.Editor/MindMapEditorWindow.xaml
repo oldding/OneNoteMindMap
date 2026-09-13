@@ -24,15 +24,28 @@
         <!-- Toolbar -->
         <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="8,4">
             <WrapPanel>
+                <Button x:Name="BtnUndo" Style="{StaticResource ToolbarButton}" Click="Undo_Click" IsEnabled="False">撤销</Button>
+                <Button x:Name="BtnRedo" Style="{StaticResource ToolbarButton}" Click="Redo_Click" IsEnabled="False">重做</Button>
+                <Separator Width="1" Height="20" Background="#CCCCCC" Margin="4,0"/>
                 <Button x:Name="BtnAddSibling" Style="{StaticResource ToolbarButton}" Click="AddSibling_Click">添加同级</Button>
                 <Button x:Name="BtnAddChild" Style="{StaticResource ToolbarButton}" Click="AddChild_Click">添加子节点</Button>
                 <Button x:Name="BtnDelete" Style="{StaticResource ToolbarButton}" Click="DeleteNode_Click">删除</Button>
                 <Separator Width="1" Height="20" Background="#CCCCCC" Margin="4,0"/>
                 <Button x:Name="BtnCollapse" Style="{StaticResource ToolbarButton}" Click="CollapseToggle_Click">折叠/展开</Button>
+                <Button x:Name="BtnProperties" Style="{StaticResource ToolbarButton}" Click="Properties_Click" IsEnabled="False">属性</Button>
+                <Button x:Name="BtnBatchFormat" Style="{StaticResource ToolbarButton}" Click="BatchFormat_Click" IsEnabled="False">批量格式</Button>
+                <Button x:Name="BtnOpenLink" Style="{StaticResource ToolbarButton}" Click="OpenLink_Click" IsEnabled="False">打开链接</Button>
+                <Button x:Name="BtnCopy" Style="{StaticResource ToolbarButton}" Click="Copy_Click" IsEnabled="False">复制</Button>
+                <Button x:Name="BtnPaste" Style="{StaticResource ToolbarButton}" Click="Paste_Click">粘贴</Button>
+                <Button x:Name="BtnMoveUp" Style="{StaticResource ToolbarButton}" Click="MoveUp_Click" IsEnabled="False">上移</Button>
+                <Button x:Name="BtnMoveDown" Style="{StaticResource ToolbarButton}" Click="MoveDown_Click" IsEnabled="False">下移</Button>
                 <Separator Width="1" Height="20" Background="#CCCCCC" Margin="4,0"/>
                 <Button x:Name="BtnSave" Style="{StaticResource ToolbarButton}" Click="Save_Click">保存</Button>
                 <Button x:Name="BtnExportPng" Style="{StaticResource ToolbarButton}" Click="ExportPng_Click">导出 PNG</Button>
                 <Button x:Name="BtnExportSvg" Style="{StaticResource ToolbarButton}" Click="ExportSvg_Click">导出 SVG</Button>
+                <Separator Width="1" Height="20" Background="#CCCCCC" Margin="4,0"/>
+                <Button x:Name="BtnFitView" Style="{StaticResource ToolbarButton}" Click="FitView_Click">适应窗口</Button>
+                <Button x:Name="BtnResetZoom" Style="{StaticResource ToolbarButton}" Click="ResetZoom_Click">100%</Button>
                 <Separator Width="1" Height="20" Background="#CCCCCC" Margin="4,0"/>
                 <Label x:Name="LblLayout" Content="布局:" VerticalAlignment="Center" Margin="4,0"/>
                 <ComboBox x:Name="LayoutCombo" SelectedIndex="0" Width="110" VerticalAlignment="Center" SelectionChanged="Layout_Changed" InputMethod.IsInputMethodEnabled="False">
@@ -54,6 +67,11 @@
                     <ComboBoxItem Tag="Rectangle">矩形</ComboBoxItem>
                     <ComboBoxItem Tag="Pill">胶囊</ComboBoxItem>
                 </ComboBox>
+                <Label x:Name="LblNodeSize" Content="尺寸:" VerticalAlignment="Center" Margin="4,0"/>
+                <ComboBox x:Name="NodeSizeCombo" SelectedIndex="0" Width="110" VerticalAlignment="Center" SelectionChanged="NodeSize_Changed" InputMethod.IsInputMethodEnabled="False">
+                    <ComboBoxItem Tag="Fixed">固定尺寸</ComboBoxItem>
+                    <ComboBoxItem Tag="AutoFit">适应内容</ComboBoxItem>
+                </ComboBox>
                 <Label x:Name="LblConnection" Content="连接线:" VerticalAlignment="Center" Margin="4,0"/>
                 <ComboBox x:Name="ConnectionCombo" SelectedIndex="0" Width="110" VerticalAlignment="Center" SelectionChanged="Connection_Changed" InputMethod.IsInputMethodEnabled="False">
                     <ComboBoxItem Tag="Curved">曲线</ComboBoxItem>
@@ -69,12 +87,18 @@
                     <ComboBoxItem Tag="Circle">圆点</ComboBoxItem>
                     <ComboBoxItem Tag="Diamond">菱形</ComboBoxItem>
                 </ComboBox>
+                <Separator Width="1" Height="20" Background="#CCCCCC" Margin="6,0,4,0"/>
+                <Label x:Name="LblSearch" Content="查找:" VerticalAlignment="Center" Margin="2,0"/>
+                <TextBox x:Name="SearchBox" Width="150" Height="24" VerticalContentAlignment="Center"
+                         KeyDown="SearchBox_KeyDown" TextChanged="SearchBox_TextChanged"/>
+                <Button x:Name="BtnFindPrevious" Style="{StaticResource ToolbarButton}" Click="FindPrevious_Click">上一个</Button>
+                <Button x:Name="BtnFindNext" Style="{StaticResource ToolbarButton}" Click="FindNext_Click">下一个</Button>
             </WrapPanel>
         </Border>
 
         <!-- Canvas area -->
         <Border Grid.Row="1" Background="#FFFFFF" ClipToBounds="True">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer x:Name="CanvasScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                 <Canvas x:Name="MainCanvas" Background="#FFFFFF"
                         MouseDown="Canvas_MouseDown"
                         MouseMove="Canvas_MouseMove"

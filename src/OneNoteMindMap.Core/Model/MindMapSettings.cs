@@ -9,8 +9,10 @@ namespace OneNoteMindMap.Core.Model
         public string EndpointStyle { get; set; } = "None";
         public string Direction { get; set; } = "Right";
         public double CanvasZoom { get; set; } = 1.0;
+        public string NodeSizeMode { get; set; } = "Fixed";
         public double NodeWidth { get; set; } = 160;
         public double NodeHeight { get; set; } = 44;
+        public double AutoNodeMaxWidth { get; set; } = 320;
         public double HorizontalGap { get; set; } = 90;
         public double VerticalGap { get; set; } = 24;
         public double LevelGap { get; set; } = 110;
@@ -26,8 +28,10 @@ namespace OneNoteMindMap.Core.Model
                 EndpointStyle = EndpointStyle,
                 Direction = Direction,
                 CanvasZoom = CanvasZoom,
+                NodeSizeMode = NodeSizeMode,
                 NodeWidth = NodeWidth,
                 NodeHeight = NodeHeight,
+                AutoNodeMaxWidth = AutoNodeMaxWidth,
                 HorizontalGap = HorizontalGap,
                 VerticalGap = VerticalGap,
                 LevelGap = LevelGap

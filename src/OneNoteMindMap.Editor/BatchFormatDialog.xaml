@@ -1,0 +1,48 @@
+<Window x:Class="OneNoteMindMap.Editor.BatchFormatDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Width="500" Height="310"
+        MinWidth="440" MinHeight="280"
+        ResizeMode="CanResizeWithGrip"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="SummaryText" Grid.Row="0" Margin="0,0,0,12" FontWeight="SemiBold"/>
+
+        <Grid Grid.Row="1" Margin="0,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="38"/>
+            </Grid.ColumnDefinitions>
+            <CheckBox x:Name="ApplyColorCheckBox" VerticalAlignment="Center" Checked="ApplyOption_Changed" Unchecked="ApplyOption_Changed">应用颜色</CheckBox>
+            <TextBox x:Name="ColorTextBox" Grid.Column="1" TextChanged="ColorTextBox_TextChanged"/>
+            <Border x:Name="ColorPreview" Grid.Column="2" Margin="6,0,0,0" BorderBrush="#999999" BorderThickness="1" CornerRadius="2"/>
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="0,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <CheckBox x:Name="ApplyIconCheckBox" VerticalAlignment="Center" Checked="ApplyOption_Changed" Unchecked="ApplyOption_Changed">应用图标</CheckBox>
+            <TextBox x:Name="IconTextBox" Grid.Column="1" MaxLength="16"/>
+        </Grid>
+
+        <TextBlock x:Name="HintText" Grid.Row="3" Margin="130,10,0,0" Foreground="#666666" FontSize="12" TextWrapping="Wrap"/>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="BtnClearFormatting" Margin="4,0" Padding="10,4" Click="ClearFormatting_Click">清除格式</Button>
+            <Button x:Name="BtnOk" Width="84" Margin="4,0" Padding="8,4" IsDefault="True" Click="Ok_Click">确定</Button>
+            <Button x:Name="BtnCancel" Width="84" Margin="4,0" Padding="8,4" IsCancel="True">取消</Button>
+        </StackPanel>
+    </Grid>
+</Window>

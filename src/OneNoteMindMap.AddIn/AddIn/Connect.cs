@@ -23,6 +23,7 @@ namespace OneNoteMindMap.AddIn
         private static Connect _instance;
         private static string _addInDirectory;
         private object _oneNoteApp;
+        private volatile bool _stopping = true;
 
         static Connect()
         {
@@ -36,7 +37,7 @@ namespace OneNoteMindMap.AddIn
         }
 
         public static Connect Instance => _instance;
-        public object OneNoteApp => _oneNoteApp;
+        public object OneNoteApp => _stopping ? null : _oneNoteApp;
 
         public string InstalledPath => _addInDirectory;
 
@@ -58,9 +59,11 @@ namespace OneNoteMindMap.AddIn
             try
             {
                 _instance = this;
+                _stopping = false;
                 _oneNoteApp = application;
                 Logger.Initialize();
-                Logger.Info("OneNote脑图 connected (" + connectMode + ")");
+                Logger.Info("OneNote脑图 connected (" + connectMode + "), build=" +
+                    System.Diagnostics.FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
 
                 try
                 {
@@ -80,28 +83,38 @@ namespace OneNoteMindMap.AddIn
 
         public void OnStartupComplete(ref Array custom) { }
         public void OnAddInsUpdate(ref Array custom) { }
-        public void OnBeginShutdown(ref Array custom) { }
+        public void OnBeginShutdown(ref Array custom) { StopSession("OnBeginShutdown"); }
 
         public void OnDisconnection(ext_DisconnectMode removeMode, ref Array custom)
         {
+            StopSession("OnDisconnection " + removeMode);
+        }
+
+        private void StopSession(string reason)
+        {
+            Logger.Info(reason);
+            if (_stopping) return;
+            _stopping = true;
+            var app = System.Threading.Interlocked.Exchange(ref _oneNoteApp, null);
+            if (ReferenceEquals(_instance, this)) _instance = null;
+            // Release the Ribbon on its callback STA. This reference used to survive forever.
+            try { RibbonState.Release(); Logger.Info("Ribbon COM reference released"); }
+            catch (Exception ex) { Logger.Error("Ribbon release failed", ex); }
             try
             {
-                UiThread.Shutdown();
-            }
-            catch { }
-            finally
-            {
-                try
+                UiThread.Shutdown(() =>
                 {
-                    if (_oneNoteApp != null && Marshal.IsComObject(_oneNoteApp))
-                        Marshal.ReleaseComObject(_oneNoteApp);
-                }
-                catch { }
-
-                _oneNoteApp = null;
-                if (ReferenceEquals(_instance, this))
-                    _instance = null;
+                    try
+                    {
+                        if (app != null && Marshal.IsComObject(app)) Marshal.ReleaseComObject(app);
+                        Logger.Info("Application COM reference released");
+                    }
+                    finally { app = null; }
+                    DialogHost.OneNoteWindow = null;
+                    GC.Collect();
+                });
             }
+            catch (Exception ex) { Logger.Error("Shutdown failed", ex); }
         }
 
         public string GetCustomUI(string ribbonId)
@@ -129,7 +142,7 @@ namespace OneNoteMindMap.AddIn
 
         public void OnRibbonLoad(IRibbonUI ribbonUI)
         {
-            RibbonState.RibbonUI = ribbonUI;
+            if (!_stopping) RibbonState.RibbonUI = ribbonUI;
         }
 
         public string GetLabel(IRibbonControl control)

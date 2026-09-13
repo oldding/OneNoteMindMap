@@ -47,6 +47,7 @@
     <Compile Include="Layout\ConnectorAnchorCalculator.cs" />
     <Compile Include="Layout\LayoutOptions.cs" />
     <Compile Include="Layout\NodeLayout.cs" />
+    <Compile Include="Layout\NodeTextLayout.cs" />
     <Compile Include="Rendering\SvgRenderer.cs" />
     <Compile Include="Rendering\Theme.cs" />
     <Compile Include="Parsing\OutlineToMindMapBuilder.cs" />

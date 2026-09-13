@@ -14,9 +14,8 @@ namespace OneNoteMindMap.OneNote
 
         private static IOneNoteApplication GetApp()
         {
-            object raw;
-            try { raw = Marshal.GetActiveObject("OneNote.Application"); }
-            catch { raw = Connect.Instance?.OneNoteApp; }
+            // Borrow the connection's RCW, never reacquire from ROT after host shutdown.
+            object raw = Connect.Instance?.OneNoteApp;
 
             if (raw == null)
                 throw new InvalidOperationException("OneNote application not available.");
@@ -29,10 +28,7 @@ namespace OneNoteMindMap.OneNote
         {
             try
             {
-                var app = GetApp();
-                var windows = app.GetWindows();
-                if (windows?.CurrentWindow == null) return null;
-                return windows.CurrentWindow.CurrentPageId;
+                return ReadCurrentWindow(window => window.CurrentPageId);
             }
             catch (Exception ex)
             {
@@ -45,10 +41,7 @@ namespace OneNoteMindMap.OneNote
         {
             try
             {
-                var app = GetApp();
-                var windows = app.GetWindows();
-                if (windows?.CurrentWindow == null) return null;
-                return windows.CurrentWindow.CurrentSectionId;
+                return ReadCurrentWindow(window => window.CurrentSectionId);
             }
             catch (Exception ex)
             {
@@ -61,15 +54,29 @@ namespace OneNoteMindMap.OneNote
         {
             try
             {
-                var app = GetApp();
-                var windows = app.GetWindows();
-                if (windows?.CurrentWindow == null) return null;
-                return windows.CurrentWindow.CurrentNotebookId;
+                return ReadCurrentWindow(window => window.CurrentNotebookId);
             }
             catch (Exception ex)
             {
                 Logger.Error("GetCurrentNotebookId failed", ex);
                 return null;
+            }
+        }
+
+        private static string ReadCurrentWindow(Func<Window, string> read)
+        {
+            Windows windows = null;
+            Window window = null;
+            try
+            {
+                windows = GetApp().GetWindows();
+                window = windows?.CurrentWindow;
+                return window == null ? null : read(window);
+            }
+            finally
+            {
+                if (window != null && Marshal.IsComObject(window)) Marshal.ReleaseComObject(window);
+                if (windows != null && Marshal.IsComObject(windows)) Marshal.ReleaseComObject(windows);
             }
         }
 
@@ -127,12 +134,12 @@ namespace OneNoteMindMap.OneNote
 
                 if (string.IsNullOrEmpty(sectionId))
                 {
-                    var windows = app.GetWindows();
-                    sectionId = windows?.CurrentWindow?.CurrentSectionId;
+                    sectionId = GetCurrentSectionId();
                 }
 
                 if (string.IsNullOrEmpty(sectionId)) return null;
 
+                app = GetApp();
                 app.CreateNewPage(sectionId, out string pageId, NewPageStyle.npsBlankPageWithTitle);
                 return pageId;
             }
